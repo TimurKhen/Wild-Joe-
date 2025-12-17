@@ -1,3 +1,5 @@
+import random
+
 import arcade
 
 from client.game.game_character import Character
@@ -31,6 +33,7 @@ class BasicGame(arcade.Window):
 
         self.keys_pressed = set()
         self.set_fullscreen(True)
+        self.game_end = False
 
     def on_draw(self):
         self.clear()
@@ -48,12 +51,38 @@ class BasicGame(arcade.Window):
                 arcade.color.RED
             )
 
-    def on_update(self, delta_time: float):
-        self.player.update(delta_time, self.keys_pressed, [self.mouse_x, self.mouse_y])
+    def on_update(self, delta_time: float = 1 / 60):
+        if self.game_end:
+            return
+
+        second_player_data = self.get_data_from_server()
+
+        self.set_data_to_second_player(second_player_data)
+
+        player_information = self.player.update(delta_time, self.keys_pressed, [self.mouse_x, self.mouse_y])
+        self.send_data_to_server(player_information)
+
         self.bullet_list.update()
         self.bullets_check()
+        if self.is_one_of_players_dead():
+            print('END OF GAME SESSION')
+            self.game_end = True
 
-        self.player_list.update_animation()
+        # self.player_list.update_animation()
+
+    def is_one_of_players_dead(self):
+        if self.player.is_dead or self.second_player.is_dead:
+            return True
+        return False
+
+    def send_data_to_server(self, player_info):
+        print(player_info)
+
+    def get_data_from_server(self):
+        return [random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT), random.randint(0, 360), True, False]
+
+    def set_data_to_second_player(self, data):
+        self.second_player.set_data(data[0], data[1], data[2], data[3], data[4])
 
     def bullets_check(self):
         for bullet in self.bullet_list:

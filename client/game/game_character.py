@@ -18,6 +18,15 @@ class Character(arcade.Sprite):
         self.idle_texture = arcade.load_texture('./textures/character_idle.png')
         self.texture = self.idle_texture
 
+        # self.current_texture = 0
+        # self.texture_change_time = 0
+        # self.texture_change_delay = 0.1  # секунд на кадр
+
+        # self.walk_textures = []
+        # for i in range(0, 8):
+        #     texture = arcade.load_texture(f":resources:/images/animated_characters/male_person/malePerson_walk{i}.png")
+        #     self.walk_textures.append(texture)
+
         self.bullet_speed = 500
         self.fire_rate = 1
         self.shoot_cooldown = 1.0 / self.fire_rate
@@ -87,6 +96,8 @@ class Character(arcade.Sprite):
         self.is_walking = dx or dy
         self.current_time += delta_time
 
+        return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead]
+
     def shoot(self, x, y):
         if self.is_dead:
             return None
@@ -137,3 +148,20 @@ class Character(arcade.Sprite):
             self.is_dead = True
             return True
         return False
+
+    # def update_animation(self, delta_time: float = 1 / 60):
+    #     """ Обновление анимации """
+    #     if self.is_walking:
+    #         self.texture_change_time += delta_time
+    #         if self.texture_change_time >= self.texture_change_delay:
+    #             self.texture_change_time = 0
+    #             self.current_texture += 1
+    #             if self.current_texture >= len(self.walk_textures):
+    #                 self.current_texture = 0
+
+    def set_data(self, new_x, new_y, new_angle, new_is_walking, new_is_dead):
+        self.center_x = new_x
+        self.center_y = new_y
+        self.angle = new_angle
+        self.is_walking = new_is_walking
+        self.is_dead = new_is_dead
