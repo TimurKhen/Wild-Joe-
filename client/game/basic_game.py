@@ -1,14 +1,17 @@
-import random
+import uuid
 
 import arcade
 
 from client.game.game_character import Character
+from client.network import WSClient
 from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class BasicGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
+        self.player_id = str(uuid.uuid4())
+        self.ws = WSClient(f"ws://localhost:8000/ws/{self.player_id}")
 
     def setup(self):
         self.player_list = arcade.SpriteList()
@@ -55,9 +58,16 @@ class BasicGame(arcade.Window):
         if self.game_end:
             return
 
-        second_player_data = self.get_data_from_server()
-
-        self.set_data_to_second_player(second_player_data)
+        server_data = self.get_data_from_server()
+        if server_data:
+            self.set_data_to_second_player([
+                server_data["x"],
+                server_data["y"],
+                server_data["angle"],
+                server_data["status"],
+                server_data["is_dead"],
+                server_data["id"],
+            ])
 
         player_information = self.player.update(delta_time, self.keys_pressed, [self.mouse_x, self.mouse_y])
         self.send_data_to_server(player_information)
@@ -76,10 +86,20 @@ class BasicGame(arcade.Window):
         return False
 
     def send_data_to_server(self, player_info):
-        print(player_info)
+        data = {
+            "x": player_info[0],
+            "y": player_info[1],
+            "angle": player_info[2],
+            "status": player_info[3],
+            "is_dead": player_info[4],
+            'id': str(self.player_id)
+        }
+        self.ws.outbox.append(data)
 
     def get_data_from_server(self):
-        return [random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT), random.randint(0, 360), True, False]
+        if self.ws.inbox:
+            return self.ws.inbox.pop(0)
+        return None
 
     def set_data_to_second_player(self, data):
         self.second_player.set_data(data[0], data[1], data[2], data[3], data[4])
