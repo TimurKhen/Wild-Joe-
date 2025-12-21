@@ -55,7 +55,6 @@ async def websocket_endpoint(ws: WebSocket, player_id: str):
                 bullets_player = players[player_id]["bullets"]
 
                 for i in bullets_player:
-                    global bullets
                     if i.player not in bullets:
                         bullets[i.player] = i
 
@@ -64,15 +63,6 @@ async def websocket_endpoint(ws: WebSocket, player_id: str):
 
                     if hit_players:
                         print(hit_players)
-            else:
-                # global bullets
-
-                # if bullets != {}:
-                print(bullets)
-                # for i in range(len(bullets)):
-                #     if abs(bullets[i]['x']) > abs(bullets[i]['start_x']) + 5000 and abs(bullets[i]['y']) > abs(
-                #             bullets[i]['start_y']) + 5000:
-                #         bullets.pop(i)
 
             # отправляем данные других игроков
             for pid, pws in connections.items():

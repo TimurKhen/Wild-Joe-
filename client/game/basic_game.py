@@ -1,3 +1,4 @@
+import json
 import uuid
 
 import arcade
@@ -101,7 +102,7 @@ class BasicGame(arcade.Window):
     def get_bullets(self):
         bullets = []
         for i in self.bullet_list:
-            bullets.append({
+            bullets.append(json.dumps({
                 'x': i.center_x,
                 'y': i.center_y,
                 'start_x': i.start_x,
@@ -110,9 +111,9 @@ class BasicGame(arcade.Window):
                 'target_y': i.target_y,
                 'angle': i.angle,
                 'damage': i.damage,
-                'id': i.id,
-                'player': self.player_id
-            })
+                'id': str(i.id),
+                'player': str(self.player_id)
+            }))
 
         return bullets
 
