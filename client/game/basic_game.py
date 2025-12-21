@@ -11,7 +11,7 @@ class BasicGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
         self.player_id = str(uuid.uuid4())
-        self.ws = WSClient(f"ws://localhost:8000/ws/{self.player_id}")
+        self.ws = WSClient(f"ws://127.0.0.1:8000/ws/{self.player_id}")
 
     def setup(self):
         self.player_list = arcade.SpriteList()
@@ -35,7 +35,7 @@ class BasicGame(arcade.Window):
             self.wall_list.append(wall)
 
         self.keys_pressed = set()
-        self.set_fullscreen(True)
+        # self.set_fullscreen(True)
         self.game_end = False
 
     def on_draw(self):
@@ -59,6 +59,7 @@ class BasicGame(arcade.Window):
             return
 
         server_data = self.get_data_from_server()
+        print(server_data)
         if server_data:
             self.set_data_to_second_player([
                 server_data["x"],
@@ -92,9 +93,28 @@ class BasicGame(arcade.Window):
             "angle": player_info[2],
             "status": player_info[3],
             "is_dead": player_info[4],
-            'id': str(self.player_id)
+            'id': str(self.player_id),
+            'bullets': self.get_bullets()
         }
         self.ws.outbox.append(data)
+
+    def get_bullets(self):
+        bullets = []
+        for i in self.bullet_list:
+            bullets.append({
+                'x': i.center_x,
+                'y': i.center_y,
+                'start_x': i.start_x,
+                'start_y': i.start_y,
+                'target_x': i.target_x,
+                'target_y': i.target_y,
+                'angle': i.angle,
+                'damage': i.damage,
+                'id': i.id,
+                'player': self.player_id
+            })
+
+        return bullets
 
     def get_data_from_server(self):
         if self.ws.inbox:

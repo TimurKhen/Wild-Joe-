@@ -1,4 +1,5 @@
 import math
+import uuid
 
 import arcade
 
@@ -6,7 +7,7 @@ from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class Bullet(arcade.Sprite):
-    def __init__(self, start_x, start_y, target_x, target_y, speed=1000, damage=50):
+    def __init__(self, start_x, start_y, target_x, target_y, speed=100000, damage=50):
         super().__init__()
         self.texture = arcade.load_texture("./textures/bullet.png")
         self.center_x = start_x
@@ -14,7 +15,13 @@ class Bullet(arcade.Sprite):
         self.speed = speed
         self.damage = damage
         self.scale = 0.02
+        self.target_x = target_x
+        self.target_y = target_y
 
+        self.id = uuid.uuid4()
+
+        self.start_x = start_x
+        self.start_y = start_y
         # Рассчитываем направление
         x_diff = target_x - start_x
         y_diff = target_y - start_y
