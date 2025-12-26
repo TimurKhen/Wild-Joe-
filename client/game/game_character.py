@@ -3,7 +3,7 @@ import math
 import arcade
 
 from client.game.bullet_object import Bullet
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT
+from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, SHOW_HITBOX
 
 
 class Character(arcade.Sprite):
@@ -35,7 +35,7 @@ class Character(arcade.Sprite):
 
         self.is_walking = False
         self.direction_angle = 0
-        self.object_size = 40
+        self.hitbox_size = 100
 
         self.angle = 0
 
@@ -84,10 +84,10 @@ class Character(arcade.Sprite):
             dx *= factor
             dy *= factor
 
-        if self.center_x + dx + self.object_size >= SCREEN_WIDTH or self.center_x + dx - self.object_size <= 0:
+        if self.center_x + dx + self.hitbox_size >= SCREEN_WIDTH or self.center_x + dx - self.hitbox_size <= 0:
             dx = 0
 
-        if self.center_y + dy + self.object_size >= SCREEN_HEIGHT or self.center_y + dy - self.object_size <= 0:
+        if self.center_y + dy + self.hitbox_size >= SCREEN_HEIGHT or self.center_y + dy - self.hitbox_size <= 0:
             dy = 0
 
         self.center_x += dx
@@ -96,7 +96,7 @@ class Character(arcade.Sprite):
         self.is_walking = dx or dy
         self.current_time += delta_time
 
-        return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead]
+        return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead, self.hitbox_size]
 
     def shoot(self, x, y):
         if self.is_dead:
@@ -112,10 +112,12 @@ class Character(arcade.Sprite):
             bullet = Bullet(
                 start_x, start_y,
                 target_x, target_y,
-                self.bullet_speed
+                self.is_walking
             )
 
             self.last_shot_time = current_time
+
+            print(bullet)
 
             return bullet
         else:
@@ -141,6 +143,21 @@ class Character(arcade.Sprite):
             150, 150, arcade.color.RED,
             360 - (self.current_time - self.last_shot_time) / self.shoot_cooldown * 360, 360, 3
         )
+
+    def draw_object_hit_box(self):
+        if self.is_dead:
+            return None
+
+        arcade.draw_circle_outline(
+            self.center_x, self.center_y,
+            self.hitbox_size, color=arcade.color.RED,
+        )
+
+    def draw(self):
+        self.draw_recovery()
+
+        if SHOW_HITBOX:
+            self.draw_object_hit_box()
 
     def get_damage(self, damage):
         self.health -= damage

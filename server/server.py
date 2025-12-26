@@ -45,25 +45,21 @@ async def websocket_endpoint(ws: WebSocket, player_id: str):
 
             print('--------')
             print(data)
-            print(msg)
             print(players)
             print(player_id)
             print(players[player_id])
+
+            player_bullets = data["bullets"]
+
+            print(player_bullets)
+
+            if len(players) > 1:
+                for i in player_bullets:
+                    bullet = json.loads(i)
+                    hit_players = await bullet_registration(bullet['x'], bullet['y'], bullet['hitbox_size'], players)
+                    print(hit_players)
+
             print('--------')
-
-            if players[player_id]["bullets"] != [] and len(players) > 1:
-                bullets_player = players[player_id]["bullets"]
-
-                for i in bullets_player:
-                    if i.player not in bullets:
-                        bullets[i.player] = i
-
-                    hit_players = await bullet_registration(i['start_x'], i['start_y'], i['target_x'], i['target_y'],
-                                                            players)
-
-                    if hit_players:
-                        print(hit_players)
-
             # отправляем данные других игроков
             for pid, pws in connections.items():
                 if pid != player_id:
