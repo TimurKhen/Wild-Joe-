@@ -14,7 +14,7 @@ class Bullet(arcade.Sprite):
         self.center_x = start_x
         self.center_y = start_y
         self.speed = 5000
-        self.damage = 50
+        self.damage = 25
         self.scale = 0.02
         self.hitbox_size = 20
 
