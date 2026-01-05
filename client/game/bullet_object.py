@@ -15,8 +15,8 @@ class Bullet(arcade.Sprite):
         self.center_y = start_y
         self.speed = 5000
         self.damage = 25
-        self.scale = 0.02
-        self.hitbox_size = 20
+        self.scale = 0.01
+        self.hitbox_size = 10
 
         target_x, target_y = self.calculate_spread(is_walking, target_x, target_y)
 

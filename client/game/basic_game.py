@@ -2,6 +2,7 @@ import json
 import uuid
 
 import arcade
+from arcade.gui import UIManager, UIBoxLayout, UILabel
 
 from client.game.game_character import Character
 from client.network import WSClient
@@ -14,8 +15,9 @@ class BasicGame(arcade.Window):
         self.player_id = uuid.uuid4()
         self.ws = WSClient(f"ws://127.0.0.1:8000/ws/{self.player_id}")
 
-        # self.world_camera = arcade.camera.Camera2D()
-        # self.gui_camera = arcade.camera.Camera2D()
+        self.world_camera = arcade.camera.Camera2D()
+        self.gui_camera = arcade.camera.Camera2D()
+
         self.world_x, self.world_y = width, height
 
         self.player_list = arcade.SpriteList()
@@ -37,6 +39,7 @@ class BasicGame(arcade.Window):
         self.collisions = arcade.SpriteList()
 
         self.tile_map = None
+        self.player_physics_engine = None
         self.wall_list = arcade.SpriteList()
         self.box_list = arcade.SpriteList()
         self.borrows_list = arcade.SpriteList()
@@ -61,11 +64,41 @@ class BasicGame(arcade.Window):
         self.sand_list = self.tile_map.sprite_lists['sand']
         self.box_list = self.tile_map.sprite_lists['box']
 
+        # UIManager — сердце GUI
+        self.manager = UIManager()
+        self.manager.enable()  # Включить, чтоб виджеты работали
+
+        # Layout для организации — как полки в шкафу
+        self.box_layout = UIBoxLayout()  # Вертикальный стек
+
+        # Добавим все виджеты в box, потом box в anchor
+        self.setup_widgets()  # Функция ниже
+
+        self.manager.add(self.box_layout)  # Всё в manager
+
+    def setup_widgets(self):
+        label = UILabel(text=f"HP: {self.player.health}",
+                        font_size=20,
+                        text_color=arcade.color.BLACK,
+                        width=300,
+                        align="left",
+                        x=10,
+                        y=100)
+        self.box_layout.add(label)
+
+        self.reload_label = UILabel(text=f"Ready",
+                                    font_size=20,
+                                    text_color=arcade.color.BLACK,
+                                    width=200,
+                                    align="left",
+                                    x=SCREEN_WIDTH - 210,
+                                    y=100)
+        self.box_layout.add(self.reload_label)
+
     def on_draw(self):
         self.clear()
 
-        # self.world_camera.use()
-        self.bullet_list.draw()
+        self.world_camera.use()
 
         if self.tile_map is not None:
             self.borrows_list.draw()
@@ -74,8 +107,10 @@ class BasicGame(arcade.Window):
             self.box_list.draw()
         # self.scene.draw()
 
+        self.bullet_list.draw()
         self.player_list.draw()
-        # self.player.draw()
+        for i in self.player_list:
+            i.draw()
 
         if self.second_player.is_dead:
             arcade.draw_circle_filled(
@@ -88,7 +123,8 @@ class BasicGame(arcade.Window):
         for i in self.bullet_list:
             i.draw()
 
-        # self.gui_camera.use()
+        self.gui_camera.use()
+        self.manager.draw()
 
         ### UI пользователя написать тут крч
 
@@ -108,9 +144,12 @@ class BasicGame(arcade.Window):
                 server_data["health"]
             ])
 
-        self.player_physics_engine.update()
+        player_information = self.player.update(delta_time, self.keys_pressed, [self.mouse_x, self.mouse_y])
+        if self.player.is_recovering:
+            self.reload_label.text = f'Reload: {round(1 - ((self.player.current_time - self.player.last_shot_time) / self.player.shoot_cooldown), 2)}'
+        else:
+            self.reload_label.text = 'Ready'
 
-        player_information = self.player.update(delta_time, self.keys_pressed, [self.mouse_x, self.mouse_y], )
         self.send_player_data_to_server(player_information, self.bullet_list)
 
         self.bullet_list.update()
@@ -125,6 +164,9 @@ class BasicGame(arcade.Window):
         #     self.player.center_x,
         #     self.player.center_y
         # )
+
+        if self.player_physics_engine is not None:
+            self.player_physics_engine.update()
 
     def send_player_data_to_server(self, player_info, bullets, is_bullet_go_to_player=False):
         if player_info:
@@ -195,6 +237,10 @@ class BasicGame(arcade.Window):
             if self.second_player.is_dead:
                 continue
             collisions = arcade.check_for_collision(self.second_player, bullet)
+            is_touched_wall = arcade.check_for_collision_with_list(bullet, self.collisions, 2)
+
+            if is_touched_wall:
+                bullet.remove_from_sprite_lists()
 
             if collisions:
                 player_information = self.player.get_player_data()

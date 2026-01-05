@@ -8,4 +8,4 @@ def set_width_height(width, height):
     SCREEN_HEIGHT = height
 
 
-SHOW_HITBOX = True
+SHOW_HITBOX = False

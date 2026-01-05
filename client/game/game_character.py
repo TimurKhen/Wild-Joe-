@@ -36,7 +36,7 @@ class Character(arcade.Sprite):
 
         self.is_walking = False
         self.direction_angle = 0
-        self.hitbox_size = 30
+        self.hitbox_size = 60
 
         self.angle = 0
 
@@ -142,15 +142,6 @@ class Character(arcade.Sprite):
 
         if not self.is_recovering:
             return
-
-        indicator_x = self.center_x
-        indicator_y = self.center_y
-
-        arcade.draw_arc_outline(
-            indicator_x, indicator_y,
-            150, 150, arcade.color.RED,
-            360 - (self.current_time - self.last_shot_time) / self.shoot_cooldown * 360, 360, 3
-        )
 
     def draw_object_hit_box(self):
         if self.is_dead:
