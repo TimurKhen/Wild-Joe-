@@ -53,19 +53,20 @@ class Character(arcade.Sprite):
 
         self.shoot_sound = arcade.load_sound('./sounds/deagle-1.mp3')
         self.reload_sound = arcade.load_sound('./sounds/reload.mp3')
+        # self.walk_sound = arcade.load_sound("./sounds/sand_walk.mp3")
+        # self.walk_player = self.walk_sound.play(loop=True)
+
+        #     СКОРЕЕ ВСЕГО ТУТ ЕСТЬ ОШИБКА!
 
     def face_towards_mouse(self, mouse_x_y):
         if self.is_dead:
             return
 
-        # mouse_x_y — это координаты мыши в окне (screen space)
         mouse_x, mouse_y = mouse_x_y
 
-        # Вектор от игрока к мыши
         dx = mouse_x - self.center_x
         dy = mouse_y - self.center_y
 
-        # Вычисляем угол в градусах (Arcade использует математическую систему: 0° — вправо, 90° — вверх)
         self.angle = -math.degrees(math.atan2(dy, dx)) + 90
 
     def update(self, delta_time, keys_pressed, mouse_x_y):
@@ -101,6 +102,11 @@ class Character(arcade.Sprite):
         self.is_walking = dx != 0 or dy != 0
         self.current_time += delta_time
 
+        # if self.is_walking:
+        #     arcade.play_sound(self.walk_player)
+        # else:
+        #     arcade.stop_sound(self.walk_player)
+
         return self.get_player_data()
 
     def get_player_data(self):
@@ -125,7 +131,7 @@ class Character(arcade.Sprite):
 
             self.last_shot_time = current_time
 
-            arcade.play_sound(self.shoot_sound)
+            arcade.play_sound(self.shoot_sound, volume=0.3)
             arcade.play_sound(self.reload_sound)
             return bullet
         else:

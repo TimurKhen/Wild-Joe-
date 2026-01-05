@@ -1,4 +1,5 @@
 import json
+import time
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -13,24 +14,48 @@ connections = {}
 # player_id -> player data
 players = {}
 
-bullets = {}
+hitted_bullets = []
+
+is_game_running = False
+
+
+# TODO
+#  Выбор карты
+
+async def cleaner():
+    if len(hitted_bullets) == 0:
+        return
+
+    current_time = time.time()
+    for i in range(len(hitted_bullets)):
+        if len(hitted_bullets) >= i:
+            try:
+                if current_time - hitted_bullets[i][1] > 3.0:
+                    hitted_bullets.pop(i)
+            except IndexError as e:
+                print(e)
 
 
 @app.websocket("/ws/{player_id}")
 async def websocket_endpoint(ws: WebSocket, player_id: str):
-    await ws.accept()
+    global is_game_running
+
+    if len(players) >= 2:
+        return
+    else:
+        await ws.accept()
     connections[player_id] = ws
 
     # начальные данные
-    players[player_id] = {
-        "x": 100,
-        "y": 100,
-        "angle": 0,
-        "status": True,
-        "is_dead": False,
-        "bullets": [],
-        "health": 100,
-    }
+    # players[player_id] = {
+    #     "x": random.randint(100, 1820),
+    #     "y": random.randint(100, 980),
+    #     "angle": 0,
+    #     "status": True,
+    #     "is_dead": False,
+    #     "bullets": [],
+    #     "health": 100,
+    # }
 
     print(f"Player connected: {player_id}")
     print(players)
@@ -39,10 +64,11 @@ async def websocket_endpoint(ws: WebSocket, player_id: str):
         while True:
             msg = await ws.receive_text()
             data = json.loads(msg)
-            data['health'] = players[player_id]['health']
-            data['is_dead'] = players[player_id]['is_dead']
-            # сохраняем данные игрока
             players[player_id] = data
+            # data['health'] = players[player_id]['health']
+            # data['is_dead'] = players[player_id]['is_dead']
+            # сохраняем данные игрока
+            # players[player_id] = data
 
             # print('--------')
             # print(data)
@@ -68,16 +94,21 @@ async def websocket_endpoint(ws: WebSocket, player_id: str):
                     bullet = json.loads(bullet)
                     print(bullet)
                     print(players)
-                    hit_players = await bullet_registration(bullet, players)
 
-                    print(hit_players)
+                    if bullet['id'] not in hitted_bullets:
+                        hit_players = await bullet_registration(bullet, players)
 
-                    for j in hit_players:
-                        players[j]['health'] -= bullet['damage']
-                        if players[j]['health'] <= 0:
-                            players[j]['is_dead'] = True
+                        if len(hit_players) > 0:
+                            hitted_bullets.append([bullet['id'], time.time()])
+
+                        for j in hit_players:
+                            players[j]['health'] -= bullet['damage']
+                            if players[j]['health'] <= 0:
+                                players[j]['is_dead'] = True
 
                     print('---------')
+
+                await cleaner()
 
             # отправляем данные других игроков
             for pid, pws in connections.items():
