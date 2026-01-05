@@ -178,17 +178,15 @@ class BasicGame(arcade.Window):
                 "is_dead": player_info[4],
                 "health": player_info[6],
                 'id': str(self.player_id),
-                'bullets': self.get_bullets(bullets, is_bullet_go_to_player),
+                'bullets': self.get_bullets(bullets),
                 'hitbox_size': player_info[5]
             }
             self.ws.outbox.append(data)
         else:
             print('No player info')
 
-    def get_bullets(self, bullets_list, is_bullet_go_to_player):
+    def get_bullets(self, bullets_list):
         bullets = []
-        if is_bullet_go_to_player:
-            return []
 
         for i in bullets_list:
             bullets.append(json.dumps({
@@ -210,6 +208,7 @@ class BasicGame(arcade.Window):
 
     def get_data_from_server(self):
         if self.ws.inbox:
+            print(self.ws.inbox)
             for i in self.ws.inbox:
                 if i['id'] == str(self.player_id):
                     print(i)

@@ -23,8 +23,8 @@ async def websocket_endpoint(ws: WebSocket, player_id: str):
 
     # начальные данные
     players[player_id] = {
-        "x": 0,
-        "y": 0,
+        "x": 100,
+        "y": 100,
         "angle": 0,
         "status": True,
         "is_dead": False,
