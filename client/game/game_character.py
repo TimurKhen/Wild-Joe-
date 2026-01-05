@@ -11,11 +11,12 @@ class Character(arcade.Sprite):
         super().__init__()
         self.center_x = x
         self.center_y = y
-        self.scale = 1.0
-        self.speed = 300
+        # self.scale = 1.0
+        self.speed = 150
         self.health = 100
 
         self.idle_texture = arcade.load_texture('./textures/player_idle.png')
+        self.scale = 0.3
         self.texture = self.idle_texture
 
         self.current_texture = 0
@@ -23,7 +24,7 @@ class Character(arcade.Sprite):
         self.texture_change_delay = 0.1  # секунд на кадр
 
         self.walk_textures = []
-        for i in range(1, 2):
+        for i in range(1, 3):
             texture = arcade.load_texture(f"./textures/player_walk_{i}.png")
             self.walk_textures.append(texture)
 
@@ -35,7 +36,7 @@ class Character(arcade.Sprite):
 
         self.is_walking = False
         self.direction_angle = 0
-        self.hitbox_size = 100
+        self.hitbox_size = 30
 
         self.angle = 0
 
@@ -50,26 +51,28 @@ class Character(arcade.Sprite):
         self.is_recovering = False
         self.is_dead = False
 
-    def setMouse(self, mouse_x_y, cam):
-        mouse_x, mouse_y = mouse_x_y
+        self.shoot_sound = arcade.load_sound('./sounds/deagle-1.mp3')
+        self.reload_sound = arcade.load_sound('./sounds/reload.mp3')
 
-        print(mouse_x_y, cam.position)
-
-        # Переводим координаты мыши в мировые
-        world_x = mouse_x / cam.zoom + cam.position[0]
-        world_y = mouse_y / cam.zoom + cam.position[1]
-
-        dx = world_x - self.center_x
-        dy = world_y - self.center_y
-
-        angle = math.degrees(math.atan2(dy, dx))
-        self.angle = angle - 90
-
-    def update(self, delta_time, keys_pressed, mouse_x_y, cam):
+    def face_towards_mouse(self, mouse_x_y):
         if self.is_dead:
             return
 
-        self.setMouse(mouse_x_y, cam)
+        # mouse_x_y — это координаты мыши в окне (screen space)
+        mouse_x, mouse_y = mouse_x_y
+
+        # Вектор от игрока к мыши
+        dx = mouse_x - self.center_x
+        dy = mouse_y - self.center_y
+
+        # Вычисляем угол в градусах (Arcade использует математическую систему: 0° — вправо, 90° — вверх)
+        self.angle = -math.degrees(math.atan2(dy, dx)) + 90
+
+    def update(self, delta_time, keys_pressed, mouse_x_y):
+        if self.is_dead:
+            return
+
+        self.face_towards_mouse(mouse_x_y)
 
         dx, dy = 0, 0
         if arcade.key.LEFT in keys_pressed or arcade.key.A in keys_pressed:
@@ -95,7 +98,7 @@ class Character(arcade.Sprite):
         self.center_x += dx
         self.center_y += dy
 
-        self.is_walking = dx or dy
+        self.is_walking = dx != 0 or dy != 0
         self.current_time += delta_time
 
         return self.get_player_data()
@@ -122,8 +125,8 @@ class Character(arcade.Sprite):
 
             self.last_shot_time = current_time
 
-            print(bullet)
-
+            arcade.play_sound(self.shoot_sound)
+            arcade.play_sound(self.reload_sound)
             return bullet
         else:
             return None
@@ -175,7 +178,7 @@ class Character(arcade.Sprite):
         self.health = new_health
 
     def update_animation(self, delta_time: float = 1 / 60):
-        """ Обновление анимации """
+        """ Обновление анимации ходьбы и возвращение к idle """
         if self.is_walking:
             self.texture_change_time += delta_time
             if self.texture_change_time >= self.texture_change_delay:
@@ -183,6 +186,12 @@ class Character(arcade.Sprite):
                 self.current_texture += 1
                 if self.current_texture >= len(self.walk_textures):
                     self.current_texture = 0
+                self.texture = self.walk_textures[self.current_texture]
+        else:
+            # Если не идёт — возвращаем idle текстуру
+            self.texture = self.idle_texture
+            self.current_texture = 0
+            self.texture_change_time = 0
 
     def set_data(self, new_x, new_y, new_angle, new_status, new_is_dead, new_health):
         self.center_x = new_x

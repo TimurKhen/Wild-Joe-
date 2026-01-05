@@ -1,5 +1,5 @@
-SCREEN_WIDTH = 2560
-SCREEN_HEIGHT = 1440
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 
 
 def set_width_height(width, height):

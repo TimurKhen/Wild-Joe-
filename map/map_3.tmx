@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
+ <tileset firstgid="1" source="basic_joe_tiles.tsx"/>
+ <layer id="1" name="sand" width="32" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxjYmBgYBrFo3gUj+JRPIpH8YjCABDwBAE=
+  </data>
+ </layer>
+ <layer id="2" name="walls" width="32" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2DwA24kPND2D7QbRsHIA4Mh/Y2C4QcAUS4AkA==
+  </data>
+ </layer>
+ <layer id="3" name="box" width="32" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo4A8wAvFPFA8Et3Ay4DqhlEwCkbBKBgqAAAdwQCY
+  </data>
+ </layer>
+ <layer id="4" name="borrows" width="32" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFQxUIoOHhCgRHuP2jYOCBIBoeBaNgOAAABS0Apw==
+  </data>
+ </layer>
+ <layer id="5" name="collisions" width="32" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo4A8IIqG6WXXQLgBlz0DEQajYOQBeqazUTByAACL3wIO
+  </data>
+ </layer>
+</map>
