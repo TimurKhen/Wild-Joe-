@@ -1,5 +1,3 @@
-import math
-
 import arcade
 
 from client.game.bullet_object import Bullet
@@ -7,13 +5,14 @@ from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, SHOW_HITBOX
 
 
 class Character(arcade.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, is_second=False):
         super().__init__()
         self.center_x = x
         self.center_y = y
         # self.scale = 1.0
         self.speed = 150
         self.health = 100
+        self.is_second = is_second
 
         self.idle_texture = arcade.load_texture('./textures/player_idle.png')
         self.scale = 0.3
@@ -58,32 +57,43 @@ class Character(arcade.Sprite):
 
         #     СКОРЕЕ ВСЕГО ТУТ ЕСТЬ ОШИБКА!
 
-    def face_towards_mouse(self, mouse_x_y):
+    def update(self, delta_time, keys_pressed):
         if self.is_dead:
             return
-
-        mouse_x, mouse_y = mouse_x_y
-
-        dx = mouse_x - self.center_x
-        dy = mouse_y - self.center_y
-
-        self.angle = -math.degrees(math.atan2(dy, dx)) + 90
-
-    def update(self, delta_time, keys_pressed, mouse_x_y):
-        if self.is_dead:
-            return
-
-        self.face_towards_mouse(mouse_x_y)
 
         dx, dy = 0, 0
-        if arcade.key.LEFT in keys_pressed or arcade.key.A in keys_pressed:
-            dx -= self.speed * delta_time
-        if arcade.key.RIGHT in keys_pressed or arcade.key.D in keys_pressed:
-            dx += self.speed * delta_time
-        if arcade.key.UP in keys_pressed or arcade.key.W in keys_pressed:
-            dy += self.speed * delta_time
-        if arcade.key.DOWN in keys_pressed or arcade.key.S in keys_pressed:
-            dy -= self.speed * delta_time
+
+        if not self.is_second:
+            if arcade.key.A in keys_pressed:
+                dx -= self.speed * delta_time
+            if arcade.key.D in keys_pressed:
+                dx += self.speed * delta_time
+            if arcade.key.W in keys_pressed:
+                dy += self.speed * delta_time
+            if arcade.key.S in keys_pressed:
+                dy -= self.speed * delta_time
+
+            if arcade.key.Q in keys_pressed:
+                self.angle -= 120 * delta_time
+
+            if arcade.key.E in keys_pressed:
+                self.angle += 120 * delta_time
+
+        else:
+            if arcade.key.LEFT in keys_pressed:
+                dx -= self.speed * delta_time
+            if arcade.key.RIGHT in keys_pressed:
+                dx += self.speed * delta_time
+            if arcade.key.UP in keys_pressed:
+                dy += self.speed * delta_time
+            if arcade.key.DOWN in keys_pressed:
+                dy -= self.speed * delta_time
+
+            if arcade.key.DELETE in keys_pressed:
+                self.angle -= 120 * delta_time
+
+            if arcade.key.PAGEDOWN in keys_pressed:
+                self.angle += 120 * delta_time
 
         if dx != 0 and dy != 0:
             factor = 0.7071
@@ -106,8 +116,6 @@ class Character(arcade.Sprite):
         #     arcade.play_sound(self.walk_player)
         # else:
         #     arcade.stop_sound(self.walk_player)
-
-        return self.get_player_data()
 
     def get_player_data(self):
         return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead, self.hitbox_size, self.health]
