@@ -15,7 +15,7 @@ class Character(arcade.Sprite):
         self.health = 100
         self.is_second = is_second
 
-        self.idle_texture = arcade.load_texture('./textures/t.png')
+        self.idle_texture = arcade.load_texture('./textures/player_idle.png')
         self.scale = 0.3
         self.texture = self.idle_texture
 
@@ -54,8 +54,7 @@ class Character(arcade.Sprite):
         self.shoot_sound = arcade.load_sound('./sounds/deagle-1.mp3')
         self.reload_sound = arcade.load_sound('./sounds/reload.mp3')
 
-        # Длина "дула" (расстояние от центра до точки выстрела)
-        self.gun_length = 50  # Настройте это значение под свою текстуру
+        self.gun_length = 50
 
     def update(self, delta_time, keys_pressed):
         if self.is_dead:

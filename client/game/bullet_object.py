@@ -13,7 +13,7 @@ class Bullet(arcade.Sprite):
         self.texture = arcade.load_texture("./textures/bullet.png")
         self.center_x = start_x
         self.center_y = start_y
-        self.speed = 10
+        self.speed = 1000
         self.damage = 25
         self.scale = 0.01
         self.hitbox_size = 10

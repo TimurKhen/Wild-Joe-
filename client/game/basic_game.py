@@ -33,6 +33,7 @@ class BasicGame(arcade.Window):
 
         self.tile_map = None
         self.player_physics_engine = None
+        self.player_2_physics_engine = None
         self.wall_list = arcade.SpriteList()
         self.box_list = arcade.SpriteList()
         self.borrows_list = arcade.SpriteList()
@@ -54,6 +55,11 @@ class BasicGame(arcade.Window):
         self.manager.add(self.box_layout)  # Всё в manager
         self.manager.add(self.box_layout_2)  # Всё в manager
 
+        self.score = [0, 0]
+        self.winner = 'n'
+        self.round = 1
+        self.setup_gui_of_game_information()
+
     def set_map(self, map_name="joe"):
         map_name = f"./map/{map_name}_tilemap.tmx"
         layer_options = {
@@ -68,6 +74,7 @@ class BasicGame(arcade.Window):
         # self.collisions.append(self.second_player)
 
         self.player_physics_engine = arcade.PhysicsEngineSimple(self.player, self.collisions)
+        self.player_2_physics_engine = arcade.PhysicsEngineSimple(self.second_player, self.collisions)
 
         self.wall_list = self.tile_map.sprite_lists['walls']
         self.borrows_list = self.tile_map.sprite_lists['borrows']
@@ -111,6 +118,28 @@ class BasicGame(arcade.Window):
                                              y=100)
         self.box_layout_2.add(self.reload_player_2_label)
 
+    def setup_gui_of_game_information(self):
+        self.game_info = UIAnchorLayout(y=SCREEN_HEIGHT // 2 - 120)
+        self.box_game_info = UIBoxLayout(vertical=True, space_between=10, x=SCREEN_WIDTH // 2 - 100,
+                                         y=SCREEN_HEIGHT - 100)
+        self.box_game_info_1 = UIBoxLayout(vertical=False, space_between=10, x=SCREEN_WIDTH // 2 - 100,
+                                           y=SCREEN_HEIGHT - 200)
+
+        self.score_1 = UILabel(f'{self.score[0]}', align="center", width=50, font_size=15,
+                               text_color=arcade.color.RED)
+        self.score_2 = UILabel(f'{self.score[0]}', align="center", width=50, font_size=15,
+                               text_color=arcade.color.RED)
+        self.round_text = UILabel(f'Раунд: {self.round}', align="center", width=100, font_size=12,
+                                  text_color=arcade.color.RED)
+
+        self.box_game_info_1.add(self.score_1)
+        self.box_game_info_1.add(self.score_2)
+        self.box_game_info.add(self.box_game_info_1)
+        self.box_game_info.add(self.round_text)
+
+        self.game_info.add(self.box_game_info)
+        self.manager.add(self.game_info)
+
     def on_draw(self):
         self.clear()
 
@@ -120,8 +149,6 @@ class BasicGame(arcade.Window):
             self.sand_list.draw()
             self.wall_list.draw()
             self.box_list.draw()
-            # self.borrows_list.draw()
-        # self.scene.draw()
 
         self.bullet_list.draw()
         self.player_list.draw()
@@ -150,7 +177,34 @@ class BasicGame(arcade.Window):
         self.gui_camera.use()
         self.manager.draw()
 
+        if self.game_end:
+            self.win_GUI()
+
         ### UI пользователя написать тут крч
+
+    def win_GUI(self):
+        self.anchor_layout = UIAnchorLayout()  # Центрирует виджеты
+        self.box_layout_2 = UIBoxLayout(vertical=True, space_between=10)  # Вертикальный стек
+
+        winner = ''
+
+        if self.winner == 'f':
+            winner = '1'
+        elif self.winner == 's':
+            winner = '2'
+
+        text = UILabel(f'Победил игрок {winner}.',
+                       font_size=20,
+                       text_color=arcade.color.RED,
+                       align="center",
+                       width=300,
+                       x=SCREEN_WIDTH // 2,
+                       y=SCREEN_HEIGHT // 2)
+
+        self.box_layout_2.add(text)
+
+        self.anchor_layout.add(self.box_layout_2)  # Box в anchor
+        self.manager.add(self.anchor_layout)  # Всё в manager
 
     def on_update(self, delta_time: float = 1 / 60):
         if self.game_end:
@@ -178,53 +232,24 @@ class BasicGame(arcade.Window):
         if self.player_physics_engine is not None:
             self.player_physics_engine.update()
 
+        if self.player_2_physics_engine is not None:
+            self.player_2_physics_engine.update()
+
         self.player_health.text = f'HP: {self.player.health}'
         self.player_2_health.text = f'HP: {self.second_player.health}'
 
-    def check_winner(self):
-        if self.player.is_dead:
-            self.game_end = True
-            self.make_winner_screen(-1)
-            lose_sound = arcade.load_sound('./sounds/lostround (1).mp3')
-            arcade.play_sound(lose_sound)
-            # TODO
-            #  Экран конца победа врага
-        elif self.second_player.is_dead:
-            self.game_end = True
-            self.make_winner_screen(1)
-            win_sound = arcade.load_sound('./sounds/wonround.mp3')
-            arcade.play_sound(win_sound)
-            # TODO
-            #  Экран конца победа игрока
-        else:
-            return
-
-    def make_winner_screen(self, winner):
-        status = ''
-        if winner == 1:
-            status = 'Выйграл игрок 1'
-        elif winner == -1:
-            status = 'Выйграл игрок 2'
-
-        self.anchor_layout = UIAnchorLayout()  # Центрирует виджеты
-        self.box_layout_2 = UIBoxLayout(vertical=True, space_between=10)  # Вертикальный стек
-
-        self.anchor_layout.add(self.box_layout_2)  # Box в anchor
-        self.manager.add(self.anchor_layout)  # Всё в manager
-
-        label = UILabel(text=f"{status}",
-                        font_size=20,
-                        text_color=arcade.color.BLACK,
-                        width=300,
-                        align="center",
-                        x=10,
-                        y=100)
-        self.box_layout_2.add(label)
+        dead = self.is_one_of_players_dead()
+        if dead == 1:
+            self.set_score(0, 1)
+        elif dead == 2:
+            self.set_score(1, 0)
 
     def is_one_of_players_dead(self):
-        if self.player.is_dead or self.second_player.is_dead:
-            return True
-        return False
+        if self.player.is_dead:
+            return 1
+        if self.second_player.is_dead:
+            return 2
+        return 0
 
     def bullets_check(self):
         for bullet in self.bullet_list:
@@ -240,16 +265,12 @@ class BasicGame(arcade.Window):
             if collisions_second:
                 is_kill = self.second_player.get_damage(bullet.damage)
                 if is_kill:
-                    self.second_player.kill()
-                    print(self.second_player)
                     self.second_player.remove_from_sprite_lists()
                 bullet.remove_from_sprite_lists()
 
             if collisions_first:
                 is_kill = self.player.get_damage(bullet.damage)
                 if is_kill:
-                    self.player.kill()
-                    print(self.player)
                     self.player.remove_from_sprite_lists()
                 bullet.remove_from_sprite_lists()
 
@@ -284,6 +305,32 @@ class BasicGame(arcade.Window):
         if arcade.key.PAGEDOWN in self.keys_pressed:
             self.second_player.angle += 180 * dt
 
-        ### Заменить на q e и del + pg down
+    def set_score(self, p1, p2):
+        self.score[0] += p1
+        self.score[1] += p2
+        print(self.score)
+        self.round += 1
+
+        self.score_1.text = f'{self.score[0]}'
+        self.score_2.text = f'{self.score[1]}'
+        self.round_text.text = f'Раунд: {self.round}'
+
+        if self.score[0] >= 16:
+            self.winner = 'f'
+            self.game_end = True
+        elif self.score[1] >= 16:
+            self.winner = 's'
+            self.game_end = True
+        else:
+            self.restart_round()
+
+    def restart_round(self):
+        self.player_list.clear()
+
+        self.player = Character(300, SCREEN_HEIGHT / 2 - 200)
+        self.player_list.append(self.player)
+
+        self.second_player = Character(SCREEN_WIDTH - 200, SCREEN_HEIGHT / 2 - 200, True)
+        self.player_list.append(self.second_player)
 
 ##### ЛОКАЛЬНЫЙ КООП + ПОВОРОТ НА QE
