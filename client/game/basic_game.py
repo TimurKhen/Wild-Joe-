@@ -16,16 +16,16 @@ class BasicGame(arcade.Window):
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
-        self.mouse_x = 0
-        self.mouse_y = 0
 
-        self.player = Character(200, SCREEN_HEIGHT / 2)
+        self.player = Character(300, SCREEN_HEIGHT / 2 - 200)
         self.player_list.append(self.player)
 
         self.second_player = Character(SCREEN_WIDTH - 200, SCREEN_HEIGHT / 2 - 200, True)
         self.player_list.append(self.second_player)
 
         self.keys_pressed = set()
+        self.mouse_buttons = set()
+        self.mouse_button_wheel = 0
         # self.set_fullscreen(True)
         self.game_end = False
 
@@ -109,7 +109,7 @@ class BasicGame(arcade.Window):
                                              align="left",
                                              x=SCREEN_WIDTH - 210,
                                              y=100)
-        self.box_layout_2.add(self.reload_label)
+        self.box_layout_2.add(self.reload_player_2_label)
 
     def on_draw(self):
         self.clear()
@@ -158,6 +158,7 @@ class BasicGame(arcade.Window):
 
         self.player.update(delta_time, self.keys_pressed)
         self.second_player.update(delta_time, self.keys_pressed)
+        self.handle_shoot(delta_time)
 
         if self.player.is_recovering:
             self.reload_label.text = f'Reload: {round(1 - ((self.player.current_time - self.player.last_shot_time) / self.player.shoot_cooldown), 2)}'
@@ -258,17 +259,30 @@ class BasicGame(arcade.Window):
     def on_key_release(self, symbol, modifiers):
         self.keys_pressed.remove(symbol)
 
-    def on_mouse_press(self, x: float, y: float, button, modifiers):
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            bullet = self.player.shoot(x, y)
+    def handle_shoot(self, dt):
+        if arcade.key.END in self.keys_pressed:
+            bullet = self.second_player.shoot()
             if bullet is not None:
                 self.bullet_list.append(bullet)
 
-        ### Заменить на пробел!!!!!!
+        if arcade.key.SPACE in self.keys_pressed:
+            bullet = self.player.shoot()
+            if bullet is not None:
+                self.bullet_list.append(bullet)
 
-    def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
-        self.mouse_x = x
-        self.mouse_y = y
+        # For 1 player
+        if arcade.key.Q in self.keys_pressed:
+            self.player.angle -= 180 * dt
+
+        if arcade.key.E in self.keys_pressed:
+            self.player.angle += 180 * dt
+
+        # For 2 player
+        if arcade.key.DELETE in self.keys_pressed:
+            self.second_player.angle -= 180 * dt
+
+        if arcade.key.PAGEDOWN in self.keys_pressed:
+            self.second_player.angle += 180 * dt
 
         ### Заменить на q e и del + pg down
 

@@ -1,3 +1,5 @@
+import math
+
 import arcade
 
 from client.game.bullet_object import Bullet
@@ -9,18 +11,17 @@ class Character(arcade.Sprite):
         super().__init__()
         self.center_x = x
         self.center_y = y
-        # self.scale = 1.0
         self.speed = 150
         self.health = 100
         self.is_second = is_second
 
-        self.idle_texture = arcade.load_texture('./textures/player_idle.png')
+        self.idle_texture = arcade.load_texture('./textures/t.png')
         self.scale = 0.3
         self.texture = self.idle_texture
 
         self.current_texture = 0
         self.texture_change_time = 0
-        self.texture_change_delay = 0.1  # секунд на кадр
+        self.texture_change_delay = 0.1
 
         self.walk_textures = []
         for i in range(1, 3):
@@ -34,9 +35,9 @@ class Character(arcade.Sprite):
         self.can_shoot = True
 
         self.is_walking = False
-        self.direction_angle = 0
         self.hitbox_size = 60
 
+        # Угол поворота персонажа (в градусах)
         self.angle = 0
 
         self.ammo = 8
@@ -44,7 +45,7 @@ class Character(arcade.Sprite):
         self.current_time = 0
 
         self.recovery_indicator_visible = False
-        self.recovery_progress = 0.0  # от 0 до 1
+        self.recovery_progress = 0.0
         self.indicator_pulse = 0.0
         self.indicator_pulse_speed = 3.0
         self.is_recovering = False
@@ -52,10 +53,9 @@ class Character(arcade.Sprite):
 
         self.shoot_sound = arcade.load_sound('./sounds/deagle-1.mp3')
         self.reload_sound = arcade.load_sound('./sounds/reload.mp3')
-        # self.walk_sound = arcade.load_sound("./sounds/sand_walk.mp3")
-        # self.walk_player = self.walk_sound.play(loop=True)
 
-        #     СКОРЕЕ ВСЕГО ТУТ ЕСТЬ ОШИБКА!
+        # Длина "дула" (расстояние от центра до точки выстрела)
+        self.gun_length = 50  # Настройте это значение под свою текстуру
 
     def update(self, delta_time, keys_pressed):
         if self.is_dead:
@@ -72,13 +72,6 @@ class Character(arcade.Sprite):
                 dy += self.speed * delta_time
             if arcade.key.S in keys_pressed:
                 dy -= self.speed * delta_time
-
-            if arcade.key.Q in keys_pressed:
-                self.angle -= 120 * delta_time
-
-            if arcade.key.E in keys_pressed:
-                self.angle += 120 * delta_time
-
         else:
             if arcade.key.LEFT in keys_pressed:
                 dx -= self.speed * delta_time
@@ -88,12 +81,6 @@ class Character(arcade.Sprite):
                 dy += self.speed * delta_time
             if arcade.key.DOWN in keys_pressed:
                 dy -= self.speed * delta_time
-
-            if arcade.key.DELETE in keys_pressed:
-                self.angle -= 120 * delta_time
-
-            if arcade.key.PAGEDOWN in keys_pressed:
-                self.angle += 120 * delta_time
 
         if dx != 0 and dy != 0:
             factor = 0.7071
@@ -112,38 +99,41 @@ class Character(arcade.Sprite):
         self.is_walking = dx != 0 or dy != 0
         self.current_time += delta_time
 
-        # if self.is_walking:
-        #     arcade.play_sound(self.walk_player)
-        # else:
-        #     arcade.stop_sound(self.walk_player)
-
     def get_player_data(self):
         return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead, self.hitbox_size, self.health]
 
-    def shoot(self, x, y):
+    def shoot(self):
         if self.is_dead:
             return None
 
         current_time = self.current_time
-        if current_time - self.last_shot_time >= self.shoot_cooldown:
-            start_x = self.center_x
-            start_y = self.center_y
-            target_x = x
-            target_y = y
-
-            bullet = Bullet(
-                start_x, start_y,
-                target_x, target_y,
-                self.is_walking
-            )
-
-            self.last_shot_time = current_time
-
-            arcade.play_sound(self.shoot_sound, volume=0.3)
-            arcade.play_sound(self.reload_sound)
-            return bullet
-        else:
+        if current_time - self.last_shot_time < self.shoot_cooldown:
             return None
+
+        rad = math.radians(self.angle)
+
+        muzzle_offset = self.width * 0.5
+        start_x = self.center_x + math.cos(rad) * muzzle_offset
+        start_y = self.center_y + math.sin(rad) * muzzle_offset
+
+        target_distance = 1000
+        target_x = start_x + math.cos(rad) * target_distance
+        target_y = start_y + math.sin(rad) * target_distance
+
+        bullet = Bullet(
+            start_x,
+            start_y,
+            target_x,
+            target_y,
+            self.is_walking
+        )
+
+        self.last_shot_time = current_time
+
+        arcade.play_sound(self.shoot_sound, volume=0.3)
+        arcade.play_sound(self.reload_sound)
+
+        return bullet
 
     def draw_recovery(self):
         if self.is_dead:
@@ -183,7 +173,6 @@ class Character(arcade.Sprite):
         self.health = new_health
 
     def update_animation(self, delta_time: float = 1 / 60):
-        """ Обновление анимации ходьбы и возвращение к idle """
         if self.is_walking:
             self.texture_change_time += delta_time
             if self.texture_change_time >= self.texture_change_delay:
@@ -193,7 +182,6 @@ class Character(arcade.Sprite):
                     self.current_texture = 0
                 self.texture = self.walk_textures[self.current_texture]
         else:
-            # Если не идёт — возвращаем idle текстуру
             self.texture = self.idle_texture
             self.current_texture = 0
             self.texture_change_time = 0
