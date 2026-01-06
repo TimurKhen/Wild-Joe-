@@ -112,13 +112,17 @@ class Character(arcade.Sprite):
 
         rad = math.radians(self.angle)
 
+        dir_x = math.cos(rad)
+        dir_y = -math.sin(rad)  # ← ВАЖНО
+
         muzzle_offset = self.width * 0.5
-        start_x = self.center_x + math.cos(rad) * muzzle_offset
-        start_y = self.center_y + math.sin(rad) * muzzle_offset
+
+        start_x = self.center_x + dir_x * muzzle_offset
+        start_y = self.center_y + dir_y * muzzle_offset
 
         target_distance = 1000
-        target_x = start_x + math.cos(rad) * target_distance
-        target_y = start_y + math.sin(rad) * target_distance
+        target_x = start_x + dir_x * target_distance
+        target_y = start_y + dir_y * target_distance
 
         bullet = Bullet(
             start_x,
