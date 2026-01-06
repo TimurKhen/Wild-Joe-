@@ -7,23 +7,24 @@ from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, SHOW_HITBOX
 
 
 class Character(arcade.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, is_second=False):
         super().__init__()
         self.center_x = x
         self.center_y = y
-        self.scale = 1.0
-        self.speed = 300
+        self.speed = 150
         self.health = 100
+        self.is_second = is_second
 
-        self.idle_texture = arcade.load_texture('./textures/player_idle.png')
+        self.idle_texture = arcade.load_texture('./textures/t.png')
+        self.scale = 0.3
         self.texture = self.idle_texture
 
         self.current_texture = 0
         self.texture_change_time = 0
-        self.texture_change_delay = 0.1  # секунд на кадр
+        self.texture_change_delay = 0.1
 
         self.walk_textures = []
-        for i in range(1, 2):
+        for i in range(1, 3):
             texture = arcade.load_texture(f"./textures/player_walk_{i}.png")
             self.walk_textures.append(texture)
 
@@ -34,9 +35,9 @@ class Character(arcade.Sprite):
         self.can_shoot = True
 
         self.is_walking = False
-        self.direction_angle = 0
-        self.hitbox_size = 100
+        self.hitbox_size = 60
 
+        # Угол поворота персонажа (в градусах)
         self.angle = 0
 
         self.ammo = 8
@@ -44,42 +45,42 @@ class Character(arcade.Sprite):
         self.current_time = 0
 
         self.recovery_indicator_visible = False
-        self.recovery_progress = 0.0  # от 0 до 1
+        self.recovery_progress = 0.0
         self.indicator_pulse = 0.0
         self.indicator_pulse_speed = 3.0
         self.is_recovering = False
         self.is_dead = False
 
-    def setMouse(self, mouse_x_y, cam):
-        mouse_x, mouse_y = mouse_x_y
+        self.shoot_sound = arcade.load_sound('./sounds/deagle-1.mp3')
+        self.reload_sound = arcade.load_sound('./sounds/reload.mp3')
 
-        print(mouse_x_y, cam.position)
+        # Длина "дула" (расстояние от центра до точки выстрела)
+        self.gun_length = 50  # Настройте это значение под свою текстуру
 
-        # Переводим координаты мыши в мировые
-        world_x = mouse_x / cam.zoom + cam.position[0]
-        world_y = mouse_y / cam.zoom + cam.position[1]
-
-        dx = world_x - self.center_x
-        dy = world_y - self.center_y
-
-        angle = math.degrees(math.atan2(dy, dx))
-        self.angle = angle - 90
-
-    def update(self, delta_time, keys_pressed, mouse_x_y, cam):
+    def update(self, delta_time, keys_pressed):
         if self.is_dead:
             return
 
-        self.setMouse(mouse_x_y, cam)
-
         dx, dy = 0, 0
-        if arcade.key.LEFT in keys_pressed or arcade.key.A in keys_pressed:
-            dx -= self.speed * delta_time
-        if arcade.key.RIGHT in keys_pressed or arcade.key.D in keys_pressed:
-            dx += self.speed * delta_time
-        if arcade.key.UP in keys_pressed or arcade.key.W in keys_pressed:
-            dy += self.speed * delta_time
-        if arcade.key.DOWN in keys_pressed or arcade.key.S in keys_pressed:
-            dy -= self.speed * delta_time
+
+        if not self.is_second:
+            if arcade.key.A in keys_pressed:
+                dx -= self.speed * delta_time
+            if arcade.key.D in keys_pressed:
+                dx += self.speed * delta_time
+            if arcade.key.W in keys_pressed:
+                dy += self.speed * delta_time
+            if arcade.key.S in keys_pressed:
+                dy -= self.speed * delta_time
+        else:
+            if arcade.key.LEFT in keys_pressed:
+                dx -= self.speed * delta_time
+            if arcade.key.RIGHT in keys_pressed:
+                dx += self.speed * delta_time
+            if arcade.key.UP in keys_pressed:
+                dy += self.speed * delta_time
+            if arcade.key.DOWN in keys_pressed:
+                dy -= self.speed * delta_time
 
         if dx != 0 and dy != 0:
             factor = 0.7071
@@ -95,38 +96,48 @@ class Character(arcade.Sprite):
         self.center_x += dx
         self.center_y += dy
 
-        self.is_walking = dx or dy
+        self.is_walking = dx != 0 or dy != 0
         self.current_time += delta_time
-
-        return self.get_player_data()
 
     def get_player_data(self):
         return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead, self.hitbox_size, self.health]
 
-    def shoot(self, x, y):
+    def shoot(self):
         if self.is_dead:
             return None
 
         current_time = self.current_time
-        if current_time - self.last_shot_time >= self.shoot_cooldown:
-            start_x = self.center_x
-            start_y = self.center_y
-            target_x = x
-            target_y = y
-
-            bullet = Bullet(
-                start_x, start_y,
-                target_x, target_y,
-                self.is_walking
-            )
-
-            self.last_shot_time = current_time
-
-            print(bullet)
-
-            return bullet
-        else:
+        if current_time - self.last_shot_time < self.shoot_cooldown:
             return None
+
+        rad = math.radians(self.angle)
+
+        dir_x = math.cos(rad)
+        dir_y = -math.sin(rad)  # ← ВАЖНО
+
+        muzzle_offset = self.width * 0.5
+
+        start_x = self.center_x + dir_x * muzzle_offset
+        start_y = self.center_y + dir_y * muzzle_offset
+
+        target_distance = 1000
+        target_x = start_x + dir_x * target_distance
+        target_y = start_y + dir_y * target_distance
+
+        bullet = Bullet(
+            start_x,
+            start_y,
+            target_x,
+            target_y,
+            self.is_walking
+        )
+
+        self.last_shot_time = current_time
+
+        arcade.play_sound(self.shoot_sound, volume=0.3)
+        arcade.play_sound(self.reload_sound)
+
+        return bullet
 
     def draw_recovery(self):
         if self.is_dead:
@@ -139,15 +150,6 @@ class Character(arcade.Sprite):
 
         if not self.is_recovering:
             return
-
-        indicator_x = self.center_x
-        indicator_y = self.center_y
-
-        arcade.draw_arc_outline(
-            indicator_x, indicator_y,
-            150, 150, arcade.color.RED,
-            360 - (self.current_time - self.last_shot_time) / self.shoot_cooldown * 360, 360, 3
-        )
 
     def draw_object_hit_box(self):
         if self.is_dead:
@@ -175,7 +177,6 @@ class Character(arcade.Sprite):
         self.health = new_health
 
     def update_animation(self, delta_time: float = 1 / 60):
-        """ Обновление анимации """
         if self.is_walking:
             self.texture_change_time += delta_time
             if self.texture_change_time >= self.texture_change_delay:
@@ -183,6 +184,11 @@ class Character(arcade.Sprite):
                 self.current_texture += 1
                 if self.current_texture >= len(self.walk_textures):
                     self.current_texture = 0
+                self.texture = self.walk_textures[self.current_texture]
+        else:
+            self.texture = self.idle_texture
+            self.current_texture = 0
+            self.texture_change_time = 0
 
     def set_data(self, new_x, new_y, new_angle, new_status, new_is_dead, new_health):
         self.center_x = new_x
