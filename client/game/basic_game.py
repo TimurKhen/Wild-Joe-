@@ -2,7 +2,7 @@ import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
 from client.game.game_character import Character
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT
+from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, SELECTED_MAP
 
 
 class BasicGame(arcade.Window):
@@ -39,7 +39,7 @@ class BasicGame(arcade.Window):
         self.borrows_list = arcade.SpriteList()
         self.sand_list = arcade.SpriteList()
 
-        self.set_map()
+        self.set_map(SELECTED_MAP)
 
         # UIManager — сердце GUI
         self.manager = UIManager()

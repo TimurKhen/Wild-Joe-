@@ -2,7 +2,7 @@ import arcade
 from arcade.gui import UIManager, UIAnchorLayout, UIBoxLayout, UILabel, UIFlatButton
 
 from client.game.basic_game import BasicGame
-from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
+from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH, set_map
 
 
 class StartView(arcade.View):
@@ -33,8 +33,12 @@ class StartView(arcade.View):
                         align="center")
         self.box_layout.add(label)
 
-        flat_button = UIFlatButton(text="Играть", width=200, height=50, color=arcade.color.BLUE)
-        flat_button.on_click = self.start_game
+        flat_button = UIFlatButton(text="Карта 1", width=200, height=50, color=arcade.color.BLUE)
+        flat_button.on_click = self.map_select_1
+        self.box_layout.add(flat_button)
+
+        flat_button = UIFlatButton(text="Карта 2", width=200, height=50, color=arcade.color.BLUE)
+        flat_button.on_click = self.map_select_2
         self.box_layout.add(flat_button)
 
     def on_draw(self):
@@ -42,6 +46,14 @@ class StartView(arcade.View):
         self.clear()
         # Батч для текста
         self.manager.draw()
+
+    def map_select_1(self, event):
+        set_map('joe')
+        self.start_game(event)
+
+    def map_select_2(self, event):
+        set_map('joe')
+        self.start_game(event)
 
     def start_game(self, event):
         print('start')
