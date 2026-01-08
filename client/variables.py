@@ -9,9 +9,6 @@ def set_width_height(width, height):
 
 
 SHOW_HITBOX = False
-SELECTED_MAP = 'joe'
-
-
-def set_map(map):
-    global SELECTED_MAP
-    SELECTED_MAP = map
+MAP_SETTINGS = {
+    'name': 'joe'
+}

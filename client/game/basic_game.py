@@ -2,11 +2,11 @@ import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
 from client.game.game_character import Character
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, SELECTED_MAP
+from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class BasicGame(arcade.Window):
-    def __init__(self, width, height, title):
+    def __init__(self, width, height, title, map_name):
         super().__init__(width, height, title)
         self.world_camera = arcade.camera.Camera2D()
         self.gui_camera = arcade.camera.Camera2D()
@@ -39,49 +39,30 @@ class BasicGame(arcade.Window):
         self.borrows_list = arcade.SpriteList()
         self.sand_list = arcade.SpriteList()
 
-        self.set_map(SELECTED_MAP)
+        self.reload_label = None
+        self.reload_player_2_label = None
+        self.player_health = None
+        self.player_2_health = None
+        self.score_1 = None
+        self.score_2 = None
+        self.round_text = None
 
-        # UIManager — сердце GUI
-        self.manager = UIManager()
-        self.manager.enable()  # Включить, чтоб виджеты работали
+        self.setup_gui()
 
-        # Layout для организации — как полки в шкафу
-        self.box_layout = UIBoxLayout()  # Вертикальный стек
-        self.box_layout_2 = UIBoxLayout(x=SCREEN_WIDTH - 300)
-
-        # Добавим все виджеты в box, потом box в anchor
-        self.setup_widgets()  # Функция ниже
-
-        self.manager.add(self.box_layout)  # Всё в manager
-        self.manager.add(self.box_layout_2)  # Всё в manager
+        self.set_map(map_name)
 
         self.score = [0, 0]
         self.winner = 'n'
         self.round = 1
         self.setup_gui_of_game_information()
 
-    def set_map(self, map_name="joe"):
-        map_name = f"./map/{map_name}_tilemap.tmx"
-        layer_options = {
-            'borrows': {
-                'use_spatial_hash': True
-            }
-        }
+    def setup_gui(self):
+        self.manager = UIManager()
+        self.manager.enable()
 
-        self.tile_map = arcade.load_tilemap(map_name, 1, layer_options)
+        self.box_layout = UIBoxLayout()  # Вертикальный стек
+        self.box_layout_2 = UIBoxLayout(x=SCREEN_WIDTH - 300)
 
-        self.collisions = self.tile_map.sprite_lists['collisions']
-        # self.collisions.append(self.second_player)
-
-        self.player_physics_engine = arcade.PhysicsEngineSimple(self.player, self.collisions)
-        self.player_2_physics_engine = arcade.PhysicsEngineSimple(self.second_player, self.collisions)
-
-        self.wall_list = self.tile_map.sprite_lists['walls']
-        self.borrows_list = self.tile_map.sprite_lists['borrows']
-        self.sand_list = self.tile_map.sprite_lists['sand']
-        self.box_list = self.tile_map.sprite_lists['box']
-
-    def setup_widgets(self):
         self.player_health = UILabel(text=f"HP: {self.player.health}",
                                      font_size=20,
                                      text_color=arcade.color.BLACK,
@@ -118,6 +99,30 @@ class BasicGame(arcade.Window):
                                              y=100)
         self.box_layout_2.add(self.reload_player_2_label)
 
+        self.manager.add(self.box_layout)  # Всё в manager
+        self.manager.add(self.box_layout_2)  # Всё в manager
+
+    def set_map(self, map):
+        map_name = f"./map/{map}_tilemap.tmx"
+        layer_options = {
+            'borrows': {
+                'use_spatial_hash': True
+            }
+        }
+
+        self.tile_map = arcade.load_tilemap(map_name, 1, layer_options)
+
+        # self.collisions.append(self.second_player)
+
+        self.wall_list = self.tile_map.sprite_lists['walls']
+        self.grass_list = self.tile_map.sprite_lists['grass']
+        self.sand_list = self.tile_map.sprite_lists['sand']
+        self.box_list = self.tile_map.sprite_lists['box']
+        self.collisions = self.tile_map.sprite_lists['collisions']
+
+        self.player_physics_engine = arcade.PhysicsEngineSimple(self.player, self.collisions)
+        self.player_2_physics_engine = arcade.PhysicsEngineSimple(self.second_player, self.collisions)
+
     def setup_gui_of_game_information(self):
         self.game_info = UIAnchorLayout(y=SCREEN_HEIGHT // 2 - 120)
         self.box_game_info = UIBoxLayout(vertical=True, space_between=10, x=SCREEN_WIDTH // 2 - 100,
@@ -149,6 +154,7 @@ class BasicGame(arcade.Window):
             self.sand_list.draw()
             self.wall_list.draw()
             self.box_list.draw()
+            self.grass_list.draw()
 
         self.bullet_list.draw()
         self.player_list.draw()
@@ -180,11 +186,9 @@ class BasicGame(arcade.Window):
         if self.game_end:
             self.win_GUI()
 
-        ### UI пользователя написать тут крч
-
     def win_GUI(self):
-        self.anchor_layout = UIAnchorLayout()  # Центрирует виджеты
-        self.box_layout_2 = UIBoxLayout(vertical=True, space_between=10)  # Вертикальный стек
+        self.anchor_layout = UIAnchorLayout()
+        self.box_layout_2 = UIBoxLayout(vertical=True, space_between=10)
 
         winner = ''
 
@@ -203,8 +207,8 @@ class BasicGame(arcade.Window):
 
         self.box_layout_2.add(text)
 
-        self.anchor_layout.add(self.box_layout_2)  # Box в anchor
-        self.manager.add(self.anchor_layout)  # Всё в manager
+        self.anchor_layout.add(self.box_layout_2)
+        self.manager.add(self.anchor_layout)
 
     def on_update(self, delta_time: float = 1 / 60):
         if self.game_end:
@@ -214,15 +218,16 @@ class BasicGame(arcade.Window):
         self.second_player.update(delta_time, self.keys_pressed)
         self.handle_shoot(delta_time)
 
-        if self.player.is_recovering:
-            self.reload_label.text = f'Reload: {round(1 - ((self.player.current_time - self.player.last_shot_time) / self.player.shoot_cooldown), 2)}'
-        else:
-            self.reload_label.text = 'Ready'
+        if self.reload_label is not None:
+            if self.player.is_recovering:
+                self.reload_label.text = f'Reload: {round(1 - ((self.player.current_time - self.player.last_shot_time) / self.player.shoot_cooldown), 2)}'
+            else:
+                self.reload_label.text = 'Ready'
 
-        if self.second_player.is_recovering:
-            self.reload_player_2_label.text = f'Reload: {round(1 - ((self.second_player.current_time - self.second_player.last_shot_time) / self.second_player.shoot_cooldown), 2)}'
-        else:
-            self.reload_player_2_label.text = 'Ready'
+            if self.second_player.is_recovering:
+                self.reload_player_2_label.text = f'Reload: {round(1 - ((self.second_player.current_time - self.second_player.last_shot_time) / self.second_player.shoot_cooldown), 2)}'
+            else:
+                self.reload_player_2_label.text = 'Ready'
 
         self.bullet_list.update()
         self.bullets_check()
@@ -235,14 +240,21 @@ class BasicGame(arcade.Window):
         if self.player_2_physics_engine is not None:
             self.player_2_physics_engine.update()
 
-        self.player_health.text = f'HP: {self.player.health}'
-        self.player_2_health.text = f'HP: {self.second_player.health}'
+        # Проверяем, что health labels существуют
+        if self.player_health is not None:
+            self.player_health.text = f'HP: {self.player.health}'
+            self.player_2_health.text = f'HP: {self.second_player.health}'
 
         dead = self.is_one_of_players_dead()
         if dead == 1:
             self.set_score(0, 1)
         elif dead == 2:
             self.set_score(1, 0)
+
+        if self.player_physics_engine is not None:
+            self.player_physics_engine.update()
+        if self.player_2_physics_engine is not None:
+            self.player_2_physics_engine.update()
 
     def is_one_of_players_dead(self):
         if self.player.is_dead:
@@ -253,13 +265,14 @@ class BasicGame(arcade.Window):
 
     def bullets_check(self):
         for bullet in self.bullet_list:
-            if self.second_player.is_dead:
+            if self.second_player.is_dead or self.player.is_dead:
                 continue
             collisions_first = arcade.check_for_collision(self.player, bullet)
             collisions_second = arcade.check_for_collision(self.second_player, bullet)
             is_touched_wall = arcade.check_for_collision_with_list(bullet, self.collisions)
+            collision_with_bullets = arcade.check_for_collision_with_list(bullet, self.bullet_list)
 
-            if is_touched_wall:
+            if is_touched_wall or collision_with_bullets:
                 bullet.remove_from_sprite_lists()
 
             if collisions_second:
@@ -311,9 +324,10 @@ class BasicGame(arcade.Window):
         print(self.score)
         self.round += 1
 
-        self.score_1.text = f'{self.score[0]}'
-        self.score_2.text = f'{self.score[1]}'
-        self.round_text.text = f'Раунд: {self.round}'
+        if self.score_1 is not None:
+            self.score_1.text = f'{self.score[0]}'
+            self.score_2.text = f'{self.score[1]}'
+            self.round_text.text = f'Раунд: {self.round}'
 
         if self.score[0] >= 16:
             self.winner = 'f'
@@ -332,5 +346,3 @@ class BasicGame(arcade.Window):
 
         self.second_player = Character(SCREEN_WIDTH - 200, SCREEN_HEIGHT / 2 - 200, True)
         self.player_list.append(self.second_player)
-
-##### ЛОКАЛЬНЫЙ КООП + ПОВОРОТ НА QE

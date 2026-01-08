@@ -35,14 +35,11 @@ class Bullet(arcade.Sprite):
         self.change_x = math.cos(angle) * self.speed
         self.change_y = math.sin(angle) * self.speed
 
-        # Поворачиваем текстуру пули в соответствии с направлением
         self.angle = angle
-        print(f"Пуля: угол={angle}, dx={self.change_x}, dy={self.change_y}")
 
     def calculate_spread(self, is_walking, x, y):
         if is_walking:
-            # Добавляем небольшой разброс при ходьбе
-            spread_amount = 50  # Настройте это значение
+            spread_amount = 100
             x1 = x + random.uniform(-spread_amount, spread_amount)
             y1 = y + random.uniform(-spread_amount, spread_amount)
             return x1, y1

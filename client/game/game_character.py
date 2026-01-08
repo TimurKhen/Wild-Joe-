@@ -38,7 +38,11 @@ class Character(arcade.Sprite):
         self.hitbox_size = 60
 
         # Угол поворота персонажа (в градусах)
-        self.angle = 0
+        if is_second:
+            self.angle = 180
+        else:
+            self.angle = 0
+
 
         self.ammo = 8
         self.is_shot = False

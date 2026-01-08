@@ -1,63 +1,72 @@
 import arcade
 from arcade.gui import UIManager, UIAnchorLayout, UIBoxLayout, UILabel, UIFlatButton
 
+from client import variables
 from client.game.basic_game import BasicGame
-from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH, set_map
+from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class StartView(arcade.View):
-    def on_show_view(self):
+    def __init__(self):
         super().__init__()
+        self.manager = None
+        self.anchor_layout = None
+        self.box_layout = None
+
+    def on_show_view(self):
         self.setup()
 
     def setup(self):
-        """Настройка начального экрана"""
         arcade.set_background_color(arcade.color.BLACK)
 
         self.manager = UIManager()
-        self.manager.enable()  # Включить, чтоб виджеты работали
+        self.manager.enable()
 
-        # Layout для организации — как полки в шкафу
-        self.anchor_layout = UIAnchorLayout()  # Центрирует виджеты
-        self.box_layout = UIBoxLayout(vertical=True, space_between=10)  # Вертикальный стек
+        self.anchor_layout = UIAnchorLayout()
+        self.box_layout = UIBoxLayout(vertical=True, space_between=10)
 
-        self.set_text()
-        self.anchor_layout.add(self.box_layout)  # Box в anchor
-        self.manager.add(self.anchor_layout)  # Всё в manager
+        self.create_ui_elements()
+        self.anchor_layout.add(self.box_layout)
+        self.manager.add(self.anchor_layout)
 
-    def set_text(self):
-        label = UILabel(text="Shooter game",
-                        font_size=20,
-                        text_color=arcade.color.WHITE,
-                        width=300,
-                        align="center")
+    def create_ui_elements(self):
+        label = UILabel(
+            text="Shooter game",
+            font_size=20,
+            text_color=arcade.color.WHITE,
+            width=300,
+            align="center"
+        )
         self.box_layout.add(label)
 
-        flat_button = UIFlatButton(text="Карта 1", width=200, height=50, color=arcade.color.BLUE)
-        flat_button.on_click = self.map_select_1
-        self.box_layout.add(flat_button)
+        maps = [
+            {"text": "Карта 1", "name": "joe"},
+            {"text": "Карта 2", "name": "inf"},
+        ]
 
-        flat_button = UIFlatButton(text="Карта 2", width=200, height=50, color=arcade.color.BLUE)
-        flat_button.on_click = self.map_select_2
-        self.box_layout.add(flat_button)
+        for map_info in maps:
+            self.create_map_button(map_info["text"], map_info["name"])
+
+    def create_map_button(self, button_text, map_name):
+        button = UIFlatButton(
+            text=button_text,
+            width=200,
+            height=50,
+            color=arcade.color.BLUE
+        )
+        button.map_name = map_name
+        button.on_click = self.on_map_selected
+        self.box_layout.add(button)
+
+    def on_map_selected(self, event):
+        map_name = event.source.map_name
+        self.start_game(map_name)
+
+    def start_game(self, map_name):
+        variables.MAP_SETTINGS['name'] = map_name
+        game_view = BasicGame(SCREEN_WIDTH, SCREEN_HEIGHT, 'Game', map_name)
+        self.window.show_view(game_view)
 
     def on_draw(self):
-        """Отрисовка начального экрана"""
         self.clear()
-        # Батч для текста
         self.manager.draw()
-
-    def map_select_1(self, event):
-        set_map('joe')
-        self.start_game(event)
-
-    def map_select_2(self, event):
-        set_map('joe')
-        self.start_game(event)
-
-    def start_game(self, event):
-        print('start')
-        """Начало игры при нажатии клавиши"""
-        w = BasicGame(SCREEN_WIDTH, SCREEN_HEIGHT, 'Game')
-        # w.setup()
-        self.window.show_view(w)
