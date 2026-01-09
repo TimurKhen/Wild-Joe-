@@ -13,7 +13,6 @@ class GameOverView(arcade.View):
         self.title = 'Game Over'
         self.window.default_camera.use()
         self.lidder_board = self.load_lidder_board()
-        print(self.lidder_board)
 
         self.manager = UIManager()
         self.manager.enable()
@@ -84,8 +83,6 @@ class GameOverView(arcade.View):
 
         player_1_lidderboard_check = self.check_with_lidder_board(player_1, player_2)
         player_2_lidderboard_check = self.check_with_lidder_board(player_2, player_1)
-
-        print(player_1_lidderboard_check, player_2_lidderboard_check)
 
         if not player_1_lidderboard_check:
             pass
