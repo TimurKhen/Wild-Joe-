@@ -8,7 +8,7 @@ def set_width_height(width, height):
     SCREEN_HEIGHT = height
 
 
-ROUNDS_TO_WIN = 1
+ROUNDS_TO_WIN = 16
 SHOW_HITBOX = False
 MAP_SETTINGS = {
     'name': 'joe'
