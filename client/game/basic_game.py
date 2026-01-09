@@ -35,7 +35,6 @@ class BasicGame(arcade.View):
         self.keys_pressed = set()
         self.mouse_buttons = set()
         self.mouse_button_wheel = 0
-        # self.set_fullscreen(True)
         self.game_end = False
 
         self.collisions = arcade.SpriteList()
