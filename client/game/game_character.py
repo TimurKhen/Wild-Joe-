@@ -136,7 +136,7 @@ class Character(arcade.Sprite):
         dir_x = math.cos(rad)
         dir_y = -math.sin(rad)  # ← ВАЖНО
 
-        muzzle_offset = self.width * 0.5
+        muzzle_offset = self.width * 0.3
 
         start_x = self.center_x + dir_x * muzzle_offset
         start_y = self.center_y + dir_y * muzzle_offset

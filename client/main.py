@@ -8,7 +8,7 @@ def set_up_game():
     screen_width, screen_height = arcade.get_display_size()
     set_width_height(screen_width, screen_height)
     # screen_width, screen_height = 1000, 600
-    window = arcade.Window(1000, 600, "Моя Игра")
+    window = arcade.Window(1000, 600, "Evil Joe")
     start_view = StartView()
     window.show_view(start_view)
     arcade.run()

@@ -1,9 +1,10 @@
 import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
+from client.emitters import make_smoke_puff
 from client.end_screen.end_screen import GameOverView
 from client.game.game_character import Character
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, ROUNDS_TO_WIN, add_shots, add_hits
+from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, ROUNDS_TO_WIN, add_hits
 from client.variables import set_winner, add_kills, add_deaths
 
 
@@ -63,6 +64,8 @@ class BasicGame(arcade.View):
         self.winner = 'n'
         self.round = 1
         self.setup_gui_of_game_information()
+
+        self.emitters = []
 
     def setup_gui(self):
         self.manager = UIManager()
@@ -188,6 +191,9 @@ class BasicGame(arcade.View):
         for i in self.bullet_list:
             i.draw()
 
+        for e in self.emitters:
+            e.draw()
+
         self.gui_camera.use()
         self.manager.draw()
 
@@ -243,6 +249,13 @@ class BasicGame(arcade.View):
         if self.player_2_physics_engine is not None:
             self.player_2_physics_engine.update()
 
+        emitters_copy = self.emitters.copy()
+        for e in emitters_copy:
+            e.update(delta_time)
+        for e in emitters_copy:
+            if e.can_reap():
+                self.emitters.remove(e)
+
     def is_one_of_players_dead(self):
         if self.player.is_dead:
             return 1
@@ -291,11 +304,13 @@ class BasicGame(arcade.View):
             bullet = self.second_player.shoot()
             if bullet is not None:
                 self.bullet_list.append(bullet)
+                self.emitters.append(make_smoke_puff(bullet.start_x, bullet.start_y))
 
         if arcade.key.SPACE in self.keys_pressed:
             bullet = self.player.shoot()
             if bullet is not None:
                 self.bullet_list.append(bullet)
+                self.emitters.append(make_smoke_puff(bullet.start_x, bullet.start_y))
 
         # For 1 player
         if arcade.key.Q in self.keys_pressed:
