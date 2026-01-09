@@ -35,7 +35,7 @@ class Bullet(arcade.Sprite):
         self.change_x = math.cos(angle) * self.speed
         self.change_y = math.sin(angle) * self.speed
 
-        self.angle = angle
+        self.angle = -angle
 
     def calculate_spread(self, is_walking, x, y):
         if is_walking:

@@ -8,11 +8,19 @@ def set_up_game():
     screen_width, screen_height = arcade.get_display_size()
     set_width_height(screen_width, screen_height)
     # screen_width, screen_height = 1000, 600
-    window = arcade.Window(800, 600, "Моя Игра")
+    window = arcade.Window(1000, 600, "Моя Игра")
     start_view = StartView()
     window.show_view(start_view)
     arcade.run()
 
 
+def restore_records():
+    with open('./client/records.txt', 'w') as f:
+        f.write('bestKD:0.0\n')
+        f.write('bestACC:0.0')
+        f.close()
+
+
 if __name__ == '__main__':
+    # restore_records()
     set_up_game()

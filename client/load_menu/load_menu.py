@@ -1,8 +1,9 @@
 import arcade
-from arcade.gui import UIManager, UIAnchorLayout, UIBoxLayout, UILabel, UIFlatButton
+from arcade.gui import UIManager, UIAnchorLayout, UIBoxLayout, UILabel, UIFlatButton, UIImage
 
 from client import variables
 from client.game.basic_game import BasicGame
+from client.variables import restore_data
 from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
@@ -11,25 +12,50 @@ class StartView(arcade.View):
         super().__init__()
         self.manager = None
         self.anchor_layout = None
-        self.box_layout = None
+        self.main_layout = None
+        self.left_image = None
+        self.right_image = None
+        restore_data()
 
     def on_show_view(self):
         self.setup()
 
     def setup(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.REDWOOD)
 
         self.manager = UIManager()
         self.manager.enable()
 
-        self.anchor_layout = UIAnchorLayout()
-        self.box_layout = UIBoxLayout(vertical=True, space_between=10)
+        self.main_layout = UIBoxLayout(vertical=False, space_between=20)
 
-        self.create_ui_elements()
-        self.anchor_layout.add(self.box_layout)
+        self.left_texture = arcade.load_texture('./textures/player1_controls.png')
+        self.right_texture = arcade.load_texture('./textures/player2_controls.png')
+
+        left_image_widget = UIImage(
+            texture=self.left_texture,
+            width=300,
+            height=300
+        )
+
+        right_image_widget = UIImage(
+            texture=self.right_texture,
+            width=300,
+            height=300
+        )
+
+        center_container = UIBoxLayout(vertical=True, space_between=10)
+
+        self.main_layout.add(left_image_widget)
+        self.main_layout.add(center_container)
+        self.main_layout.add(right_image_widget)
+
+        self.create_ui_elements(center_container)
+
+        self.anchor_layout = UIAnchorLayout()
+        self.anchor_layout.add(self.main_layout)
         self.manager.add(self.anchor_layout)
 
-    def create_ui_elements(self):
+    def create_ui_elements(self, container):
         label = UILabel(
             text="Shooter game",
             font_size=20,
@@ -37,7 +63,7 @@ class StartView(arcade.View):
             width=300,
             align="center"
         )
-        self.box_layout.add(label)
+        container.add(label)
 
         maps = [
             {"text": "Карта 1", "name": "joe"},
@@ -45,18 +71,18 @@ class StartView(arcade.View):
         ]
 
         for map_info in maps:
-            self.create_map_button(map_info["text"], map_info["name"])
+            self.create_map_button(container, map_info["text"], map_info["name"])
 
-    def create_map_button(self, button_text, map_name):
+    def create_map_button(self, container, button_text, map_name):
         button = UIFlatButton(
             text=button_text,
-            width=200,
+            width=300,
             height=50,
-            color=arcade.color.BLUE
+            color=arcade.color.RED
         )
         button.map_name = map_name
         button.on_click = self.on_map_selected
-        self.box_layout.add(button)
+        container.add(button)
 
     def on_map_selected(self, event):
         map_name = event.source.map_name

@@ -1,0 +1,2 @@
+bestKD:1.0
+bestACC:0.57

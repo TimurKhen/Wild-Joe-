@@ -1,13 +1,21 @@
 import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
+from client.end_screen.end_screen import GameOverView
 from client.game.game_character import Character
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT
+from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, ROUNDS_TO_WIN, add_shots, add_hits
+from client.variables import set_winner, add_kills, add_deaths
 
 
-class BasicGame(arcade.Window):
+class BasicGame(arcade.View):
     def __init__(self, width, height, title, map_name):
-        super().__init__(width, height, title)
+        super().__init__()
+
+        self.window.set_mouse_visible(False)
+        self.window.width = width
+        self.window.height = height
+        self.window.title = title
+
         self.world_camera = arcade.camera.Camera2D()
         self.gui_camera = arcade.camera.Camera2D()
 
@@ -187,28 +195,8 @@ class BasicGame(arcade.Window):
             self.win_GUI()
 
     def win_GUI(self):
-        self.anchor_layout = UIAnchorLayout()
-        self.box_layout_2 = UIBoxLayout(vertical=True, space_between=10)
-
-        winner = ''
-
-        if self.winner == 'f':
-            winner = '1'
-        elif self.winner == 's':
-            winner = '2'
-
-        text = UILabel(f'Победил игрок {winner}.',
-                       font_size=20,
-                       text_color=arcade.color.RED,
-                       align="center",
-                       width=300,
-                       x=SCREEN_WIDTH // 2,
-                       y=SCREEN_HEIGHT // 2)
-
-        self.box_layout_2.add(text)
-
-        self.anchor_layout.add(self.box_layout_2)
-        self.manager.add(self.anchor_layout)
+        view = GameOverView()
+        self.window.show_view(view)
 
     def on_update(self, delta_time: float = 1 / 60):
         if self.game_end:
@@ -240,7 +228,6 @@ class BasicGame(arcade.Window):
         if self.player_2_physics_engine is not None:
             self.player_2_physics_engine.update()
 
-        # Проверяем, что health labels существуют
         if self.player_health is not None:
             self.player_health.text = f'HP: {self.player.health}'
             self.player_2_health.text = f'HP: {self.second_player.health}'
@@ -276,14 +263,20 @@ class BasicGame(arcade.Window):
                 bullet.remove_from_sprite_lists()
 
             if collisions_second:
+                add_hits(1)
                 is_kill = self.second_player.get_damage(bullet.damage)
                 if is_kill:
+                    add_kills(1)
+                    add_deaths(2)
                     self.second_player.remove_from_sprite_lists()
                 bullet.remove_from_sprite_lists()
 
             if collisions_first:
+                add_hits(2)
                 is_kill = self.player.get_damage(bullet.damage)
                 if is_kill:
+                    add_kills(2)
+                    add_deaths(1)
                     self.player.remove_from_sprite_lists()
                 bullet.remove_from_sprite_lists()
 
@@ -321,7 +314,7 @@ class BasicGame(arcade.Window):
     def set_score(self, p1, p2):
         self.score[0] += p1
         self.score[1] += p2
-        print(self.score)
+
         self.round += 1
 
         if self.score_1 is not None:
@@ -329,12 +322,14 @@ class BasicGame(arcade.Window):
             self.score_2.text = f'{self.score[1]}'
             self.round_text.text = f'Раунд: {self.round}'
 
-        if self.score[0] >= 16:
+        if self.score[0] >= ROUNDS_TO_WIN:
             self.winner = 'f'
             self.game_end = True
-        elif self.score[1] >= 16:
+            set_winner('f')
+        elif self.score[1] >= ROUNDS_TO_WIN:
             self.winner = 's'
             self.game_end = True
+            set_winner('s')
         else:
             self.restart_round()
 
