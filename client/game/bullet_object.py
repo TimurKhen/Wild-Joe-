@@ -8,7 +8,7 @@ from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class Bullet(arcade.Sprite):
-    def __init__(self, start_x, start_y, target_x, target_y, angle, is_walking=False):
+    def __init__(self, start_x, start_y, target_x, target_y, is_walking=False, player_angle=0):
         super().__init__()
         self.texture = arcade.load_texture("./textures/bullet.png")
         self.center_x = start_x
@@ -34,8 +34,8 @@ class Bullet(arcade.Sprite):
         angle = math.atan2(y_diff, x_diff)
         self.change_x = math.cos(angle) * self.speed
         self.change_y = math.sin(angle) * self.speed
-
-        self.angle = -angle
+        self.start_angle = math.degrees(player_angle)
+        self.angle = angle
 
     def calculate_spread(self, is_walking, x, y):
         if is_walking:

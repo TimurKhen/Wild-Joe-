@@ -150,7 +150,8 @@ class Character(arcade.Sprite):
             start_y,
             target_x,
             target_y,
-            self.is_walking
+            self.is_walking,
+            self.angle
         )
 
         self.last_shot_time = current_time

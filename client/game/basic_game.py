@@ -1,7 +1,7 @@
 import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
-from client.emitters import make_smoke_puff
+from client.emitters import make_smoke_puff, make_explosion, make_through_blood_explosion, make_blood_puddle
 from client.end_screen.end_screen import GameOverView
 from client.game.game_character import Character
 from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, ROUNDS_TO_WIN, add_hits
@@ -210,6 +210,7 @@ class BasicGame(arcade.View):
 
         self.player.update(delta_time, self.keys_pressed)
         self.second_player.update(delta_time, self.keys_pressed)
+
         self.handle_shoot(delta_time)
 
         if self.reload_label is not None:
@@ -273,25 +274,37 @@ class BasicGame(arcade.View):
             collision_with_bullets = arcade.check_for_collision_with_list(bullet, self.bullet_list)
 
             if is_touched_wall or collision_with_bullets:
+                self.emitters.append(make_explosion(bullet.center_x, bullet.center_y))
                 bullet.remove_from_sprite_lists()
 
             if collisions_second:
                 add_hits(1)
+                self.emitter_work_with_player(bullet)
+
                 is_kill = self.second_player.get_damage(bullet.damage)
                 if is_kill:
                     add_kills(1)
                     add_deaths(2)
                     self.second_player.remove_from_sprite_lists()
+
                 bullet.remove_from_sprite_lists()
 
             if collisions_first:
                 add_hits(2)
+                self.emitter_work_with_player(bullet)
+
                 is_kill = self.player.get_damage(bullet.damage)
                 if is_kill:
                     add_kills(2)
                     add_deaths(1)
                     self.player.remove_from_sprite_lists()
                 bullet.remove_from_sprite_lists()
+
+    def emitter_work_with_player(self, bullet):
+        self.emitters.append(make_through_blood_explosion(bullet.center_x, bullet.center_y, -bullet.angle))
+        blood_puddle = make_blood_puddle(bullet.center_x, bullet.center_y, count=4)
+        for stain in blood_puddle:
+            self.emitters.append(stain)
 
     def on_key_press(self, symbol, modifiers):
         self.keys_pressed.add(symbol)
@@ -350,6 +363,7 @@ class BasicGame(arcade.View):
 
     def restart_round(self):
         self.player_list.clear()
+        self.emitters.clear()
 
         self.player = Character(300, SCREEN_HEIGHT / 2 - 200)
         self.player_list.append(self.player)
