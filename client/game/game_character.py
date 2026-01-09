@@ -43,7 +43,6 @@ class Character(arcade.Sprite):
         else:
             self.angle = 0
 
-
         self.ammo = 8
         self.is_shot = False
         self.current_time = 0
@@ -66,16 +65,35 @@ class Character(arcade.Sprite):
 
         dx, dy = 0, 0
 
+        # Конвертируем угол в радианы
+        angle_rad = math.radians(self.angle)
+
         if not self.is_second:
-            if arcade.key.A in keys_pressed:
-                dx -= self.speed * delta_time
-            if arcade.key.D in keys_pressed:
-                dx += self.speed * delta_time
+            # Для первого игрока (WASD)
+            # Вперед (W) - по направлению взгляда
             if arcade.key.W in keys_pressed:
-                dy += self.speed * delta_time
+                dx += math.cos(angle_rad) * self.speed * delta_time
+                dy -= math.sin(angle_rad) * self.speed * delta_time  # Минус для системы координат arcade
+
+            # Назад (S) - противоположно направлению взгляда
             if arcade.key.S in keys_pressed:
-                dy -= self.speed * delta_time
+                dx -= math.cos(angle_rad) * self.speed * delta_time
+                dy += math.sin(angle_rad) * self.speed * delta_time  # Плюс для системы координат arcade
+
+            # Влево (A) - перпендикулярно влево от направления взгляда (90 градусов против часовой стрелки)
+            if arcade.key.D in keys_pressed:
+                # Для перпендикулярного движения влево: cos(angle + 90), sin(angle + 90)
+                dx += math.cos(angle_rad + math.pi / 2) * self.speed * delta_time
+                dy -= math.sin(angle_rad + math.pi / 2) * self.speed * delta_time
+
+            # Вправо (D) - перпендикулярно вправо от направления взгляда (90 градусов по часовой стрелке)
+            if arcade.key.A in keys_pressed:
+                # Для перпендикулярного движения вправо: cos(angle - 90), sin(angle - 90)
+                dx += math.cos(angle_rad - math.pi / 2) * self.speed * delta_time
+                dy -= math.sin(angle_rad - math.pi / 2) * self.speed * delta_time
+
         else:
+            # Для второго игрока сохраняем старое поведение (стрелки)
             if arcade.key.LEFT in keys_pressed:
                 dx -= self.speed * delta_time
             if arcade.key.RIGHT in keys_pressed:
@@ -85,22 +103,27 @@ class Character(arcade.Sprite):
             if arcade.key.DOWN in keys_pressed:
                 dy -= self.speed * delta_time
 
+        # Если нажаты две клавиши движения по диагонали
         if dx != 0 and dy != 0:
-            factor = 0.7071
+            factor = 0.7071  # 1/√2
             dx *= factor
             dy *= factor
 
+        # Проверка границ экрана
         if self.center_x + dx + self.hitbox_size >= SCREEN_WIDTH or self.center_x + dx - self.hitbox_size <= 0:
             dx = 0
 
         if self.center_y + dy + self.hitbox_size >= SCREEN_HEIGHT or self.center_y + dy - self.hitbox_size <= 0:
             dy = 0
 
+        # Применяем движение
         self.center_x += dx
         self.center_y += dy
 
         self.is_walking = dx != 0 or dy != 0
         self.current_time += delta_time
+
+
 
     def get_player_data(self):
         return [self.center_x, self.center_y, self.angle, self.is_walking, self.is_dead, self.hitbox_size, self.health]
