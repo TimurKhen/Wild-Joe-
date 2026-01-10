@@ -15,7 +15,11 @@ class Character(arcade.Sprite):
         self.health = 100
         self.is_second = is_second
 
-        self.idle_texture = arcade.load_texture('./textures/player_idle.png')
+        if is_second:
+            self.idle_texture = arcade.load_texture('./textures/players/p2/idle_player_2.png')
+        else:
+            self.idle_texture = arcade.load_texture('./textures/players/p1/idle_player_1.png')
+
         self.scale = 0.3
         self.texture = self.idle_texture
 
@@ -24,9 +28,14 @@ class Character(arcade.Sprite):
         self.texture_change_delay = 0.1
 
         self.walk_textures = []
-        for i in range(1, 3):
-            texture = arcade.load_texture(f"./textures/player_walk_{i}.png")
-            self.walk_textures.append(texture)
+        if is_second:
+            for i in range(1, 3):
+                texture = arcade.load_texture(f"./textures/players/p2/walk_{i}_player_2.png")
+                self.walk_textures.append(texture)
+        else:
+            for i in range(1, 3):
+                texture = arcade.load_texture(f"./textures/players/p1/walk_{i}_player_1.png")
+                self.walk_textures.append(texture)
 
         self.bullet_speed = 500
         self.fire_rate = 1

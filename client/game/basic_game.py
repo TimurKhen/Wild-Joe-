@@ -26,10 +26,10 @@ class BasicGame(arcade.View):
         self.wall_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
 
-        self.player = Character(300, SCREEN_HEIGHT / 2 - 200)
+        self.player = Character(300, SCREEN_HEIGHT / 2)
         self.player_list.append(self.player)
 
-        self.second_player = Character(SCREEN_WIDTH - 200, SCREEN_HEIGHT / 2 - 200, True)
+        self.second_player = Character(SCREEN_WIDTH - 200, SCREEN_HEIGHT / 2, True)
         self.player_list.append(self.second_player)
 
         self.keys_pressed = set()
