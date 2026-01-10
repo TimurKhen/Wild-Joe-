@@ -10,6 +10,7 @@ class GameOverView(arcade.View):
     def __init__(self):
         """ This is run once when we switch to this view """
         super().__init__()
+        arcade.set_background_color(arcade.color.REDWOOD)
         self.title = 'Game Over'
         self.window.default_camera.use()
         self.lidder_board = self.load_lidder_board()

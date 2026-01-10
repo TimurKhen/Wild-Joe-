@@ -16,6 +16,7 @@ class BasicGame(arcade.View):
         self.window.width = width
         self.window.height = height
         self.window.title = title
+        arcade.set_background_color(arcade.color.GRAY)
 
         self.world_camera = arcade.camera.Camera2D()
         self.gui_camera = arcade.camera.Camera2D()

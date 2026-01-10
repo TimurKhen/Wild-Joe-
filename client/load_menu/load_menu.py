@@ -68,6 +68,7 @@ class StartView(arcade.View):
         maps = [
             {"text": "Карта 1", "name": "joe"},
             {"text": "Карта 2", "name": "inf"},
+            {"text": "Пустая карта", "name": "white"},
         ]
 
         for map_info in maps:
