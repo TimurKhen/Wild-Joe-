@@ -36,6 +36,8 @@ class Character(arcade.Sprite):
             for i in range(1, 3):
                 texture = arcade.load_texture(f"./textures/players/p1/walk_{i}_player_1.png")
                 self.walk_textures.append(texture)
+        self.walk_textures.insert(0, self.idle_texture)
+        self.walk_textures.insert(2, self.idle_texture)
 
         self.bullet_speed = 500
         self.fire_rate = 1
