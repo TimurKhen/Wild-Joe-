@@ -108,14 +108,6 @@ def _get_through_blood_velocity(angle_rad, speed):
 
 
 def make_blood_stain(x, y, scale_min=2, scale_max=5, lifetime=8.0):
-    """
-    Создает одно кровяное пятно, которое долго выцветает
-
-    Args:
-        x, y: позиция пятна
-        scale_min, scale_max: диапазон размера пятна
-        lifetime: время жизни в секундах (до полного исчезновения)
-    """
     return Emitter(
         center_xy=(x, y),
         emit_controller=EmitBurst(1),  # Только одно пятно
@@ -123,18 +115,14 @@ def make_blood_stain(x, y, scale_min=2, scale_max=5, lifetime=8.0):
             filename_or_texture=random.choice(BLOOD_TEX),
             change_xy=(0.0, 0.0),  # Не двигается
             lifetime=lifetime,
-            start_alpha=220,  # Начальная прозрачность
-            end_alpha=0,  # Полностью исчезает
+            start_alpha=220,
+            end_alpha=0,
             scale=random.uniform(scale_min, scale_max),
-            # Без mutation_callback, так как пятно статичное
         ),
     )
 
 
 def make_blood_puddle(x, y, count=3, radius=5, lifetime=20.0):
-    """
-    Создает небольшую лужу крови из нескольких пятен
-    """
     stains = []
     for _ in range(count):
         offset_x = random.uniform(-radius * 5, radius * 5)
