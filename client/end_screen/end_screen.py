@@ -5,10 +5,7 @@ from client.variables import PLAYERS_STATISTICS, SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class GameOverView(arcade.View):
-    """ View to show when game is over """
-
     def __init__(self):
-        """ This is run once when we switch to this view """
         super().__init__()
         arcade.set_background_color(arcade.color.REDWOOD)
         self.title = 'Game Over'
@@ -24,7 +21,7 @@ class GameOverView(arcade.View):
 
     def load_lidder_board(self):
         lines = []
-        with open('./client/records.txt', 'r') as f:
+        with open('./records.txt', 'r') as f:
             lines = list(map(lambda x: x.strip().split(':'), f.readlines()))
 
         return lines
@@ -33,12 +30,12 @@ class GameOverView(arcade.View):
         if not new_line_content.endswith('\n'):
             new_line_content += '\n'
 
-        with open('./client/records.txt', 'r') as file:
+        with open('./records.txt', 'r') as file:
             lines = file.readlines()
 
         lines[line_number] = new_line_content
 
-        with open('./client/records.txt', 'w') as file:
+        with open('./records.txt', 'w') as file:
             file.writelines(lines)
 
     def check_with_lidder_board(self, player_data, another_player_data):
@@ -159,6 +156,5 @@ class GameOverView(arcade.View):
         self.manager.add(self.anchor)
 
     def on_draw(self):
-        """ Draw this view """
         self.clear()
         self.manager.draw()
