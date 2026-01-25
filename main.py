@@ -15,7 +15,7 @@ def set_up_game():
 
 
 def restore_records():
-    with open('./records.txt', 'w') as f:
+    with open('./client/records.txt', 'w') as f:
         f.write('bestKD:0.0\n')
         f.write('bestACC:0.0')
         f.close()
