@@ -2,8 +2,8 @@ import math
 
 import arcade
 
-from client.game.bullet_object import Bullet
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, SHOW_HITBOX, add_shots
+from game.bullet_object import Bullet
+from variables import SCREEN_WIDTH, SCREEN_HEIGHT, SHOW_HITBOX, add_shots
 
 
 class Character(arcade.Sprite):

@@ -1,10 +1,10 @@
 import arcade
 from arcade.gui import UIManager, UIAnchorLayout, UIBoxLayout, UILabel, UIFlatButton, UIImage
 
-from client import variables
-from client.game.basic_game import BasicGame
-from client.variables import restore_data
-from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
+import variables
+from game.basic_game import BasicGame
+from variables import restore_data
+from variables import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class StartView(arcade.View):

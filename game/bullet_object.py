@@ -4,7 +4,7 @@ import uuid
 
 import arcade
 
-from client.variables import SCREEN_HEIGHT, SCREEN_WIDTH
+from variables import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class Bullet(arcade.Sprite):

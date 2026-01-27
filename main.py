@@ -1,7 +1,7 @@
 import arcade
 
-from client.load_menu.load_menu import StartView
-from client.variables import set_width_height
+from load_menu.load_menu import StartView
+from variables import set_width_height
 
 
 def set_up_game():
@@ -15,7 +15,7 @@ def set_up_game():
 
 
 def restore_records():
-    with open('./client/records.txt', 'w') as f:
+    with open('records.txt', 'w') as f:
         f.write('bestKD:0.0\n')
         f.write('bestACC:0.0')
         f.close()

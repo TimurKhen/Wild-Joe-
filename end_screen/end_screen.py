@@ -1,7 +1,7 @@
 import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
-from client.variables import PLAYERS_STATISTICS, SCREEN_WIDTH, SCREEN_HEIGHT
+from variables import PLAYERS_STATISTICS, SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class GameOverView(arcade.View):
@@ -127,7 +127,7 @@ class GameOverView(arcade.View):
 
         if 2 in player_1_lidderboard_check:
             lidder_board_message_1 = UILabel(
-                text=f"Игрок 1 поставил новый рекорд! по {key[1]} - {player_1[key[1]]}",
+                text=f"Игрок 1 поставил новый рекорд! по {key[2]} - {player_1[key[2]]}",
                 font_size=25,
                 align="center",
                 width=500, text_color=arcade.color.BLACK

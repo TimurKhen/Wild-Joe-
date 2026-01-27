@@ -1,11 +1,11 @@
 import arcade
 from arcade.gui import UIManager, UIBoxLayout, UILabel, UIAnchorLayout
 
-from client.emitters import make_smoke_puff, make_explosion, make_through_blood_explosion, make_blood_puddle
-from client.end_screen.end_screen import GameOverView
-from client.game.game_character import Character
-from client.variables import SCREEN_WIDTH, SCREEN_HEIGHT, ROUNDS_TO_WIN, add_hits
-from client.variables import set_winner, add_kills, add_deaths
+from emitters import make_smoke_puff, make_explosion, make_through_blood_explosion, make_blood_puddle
+from end_screen.end_screen import GameOverView
+from game.game_character import Character
+from variables import SCREEN_WIDTH, SCREEN_HEIGHT, ROUNDS_TO_WIN, add_hits
+from variables import set_winner, add_kills, add_deaths
 
 
 class BasicGame(arcade.View):
